@@ -1,0 +1,10 @@
+{
+  "name": "وصل الإسلامية",
+  "description": "منصة إسلامية رقمية شاملة وحديثة للقرآن الكريم، إذاعة القرآن الكريم، الأذكار، مواقيت الصلاة، الأحاديث، القبلة، والتقويم الهجري.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

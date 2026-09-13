@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>وصل الإسلامية | Wasl Islamic</title>
+    <meta name="description" content="منصة إسلامية رقمية شاملة وحديثة للقرآن الكريم، الأذكار، مواقيت الصلاة، الأحاديث، القبلة، والتقويم الهجري." />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="وصل الإسلامية | Wasl Islamic" />
+    <meta property="og:description" content="منصة إسلامية رقمية شاملة للقرآن الكريم والأذكار ومواقيت الصلاة والأحاديث النبوية." />
+    <meta property="og:image" content="/brand/logo-full.png" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="وصل الإسلامية | Wasl Islamic" />
+    <meta name="twitter:description" content="منصة إسلامية رقمية شاملة للقرآن الكريم والأذكار ومواقيت الصلاة." />
+    <meta name="twitter:image" content="/brand/logo-full.png" />
+
+    <!-- PWA & Mobile Web App Meta -->
+    <meta name="theme-color" content="#062e24" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="وصل الإسلامية" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Google Fonts for Luxury Modern Arabic Typography & Quran Script -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Scheherazade+New:wght@400;600;700&family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet" />
+    <!-- Theme Initialization Script to prevent FOUC -->
+    <script>
+      (function() {
+        try {
+          const saved = localStorage.getItem('wasl_theme');
+          const isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch(e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 dark:bg-emerald-950 dark:text-slate-100 font-sans antialiased min-h-screen selection:bg-emerald-500/20 selection:text-emerald-800 dark:selection:text-emerald-300 transition-colors duration-200">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

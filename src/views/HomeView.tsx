@@ -278,6 +278,38 @@ export const HomeView: React.FC<Props> = ({ onNavigate }) => {
         </div>
       </section>
 
+      {/* Daily Wird Feature Banner */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#073c30] via-[#042820] to-[#021813] text-white p-5 sm:p-7 shadow-lg border border-emerald-500/25">
+        <div className="absolute inset-0 bg-islamic-pattern opacity-10 pointer-events-none" />
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-5 relative z-10">
+          <div className="space-y-1.5 text-right w-full sm:w-auto">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[11px] font-bold">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>برنامجك الإيماني اليومي</span>
+              </span>
+              <span className="text-xs text-emerald-200/80">٥ أجزاء ميسرة وموثقة</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold font-tajawal text-white">
+              ورد اليوم
+            </h2>
+            <p className="text-xs sm:text-sm text-emerald-100/90 max-w-xl">
+              خذ من يومك دقائق تقرّبك إلى الله: آيات مباركة، أذكار مأثورة، حديث صحيح، دعاء مأثور، وتسبيح.
+            </p>
+          </div>
+
+          <div className="w-full sm:w-auto flex items-center justify-end shrink-0">
+            <button
+              onClick={() => onNavigate('wird')}
+              className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-sm shadow-xl transition-transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>ابدأ وردك الآن</span>
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Quran Radio Live Banner Section */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-900 via-emerald-950 to-teal-950 text-white p-5 sm:p-7 shadow-lg border border-emerald-700/50">
         <div className="flex flex-col md:flex-row items-center justify-between gap-5 relative z-10">

@@ -20,7 +20,8 @@ import {
   Radio,
   LogIn,
   HandHeart,
-  Award
+  Award,
+  CheckCircle2
 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { BrandLogo } from './brand/BrandLogo';
@@ -46,6 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const navItems = [
     { id: 'home', label: 'الرئيسية', icon: Sparkles },
+    { id: 'wird', label: 'ورد اليوم', icon: CheckCircle2 },
     { id: 'quran-radio', label: 'إذاعة القرآن', icon: Radio },
     { id: 'quran', label: 'القرآن الكريم', icon: BookOpen },
     { id: 'azkar', label: 'الأذكار', icon: Heart },

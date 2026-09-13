@@ -1,31 +1,41 @@
 import React from 'react';
+import { branding } from '../../config/branding';
 
 export type BrandLogoVariant = 'full' | 'compact' | 'icon' | 'responsive';
 export type BrandLogoSize = 'sm' | 'md' | 'lg' | 'xl' | 'responsive';
+export type BrandLogoTheme = 'auto' | 'light' | 'dark';
 
 export interface BrandLogoProps {
+  /** Logo variant: full (text + arch), compact (same as full lockup), icon (arch only), responsive */
   variant?: BrandLogoVariant;
+  /** Sizing preset or responsive clamp */
   size?: BrandLogoSize;
+  /** Force a specific theme or auto-track system/user theme without flash */
+  forceTheme?: BrandLogoTheme;
+  /** Custom additional className */
   className?: string;
+  /** Click handler */
   onClick?: () => void;
+  /** Whether the logo behaves as a clickable button/link */
   clickable?: boolean;
+  /** Accessibility alt text */
   alt?: string;
+  /** Loading priority */
   priority?: boolean;
-  withBadgeInDark?: boolean;
 }
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   variant = 'compact',
   size = 'md',
+  forceTheme = 'auto',
   className = '',
   onClick,
   clickable = false,
-  alt = 'وصل الإسلامية',
+  alt = branding.name,
   priority = true,
-  withBadgeInDark = false,
 }) => {
-  // Height sizing classes based on size prop
-  const getHeightClasses = () => {
+  // Height sizing classes based on size prop using fluid clamp where appropriate
+  const getHeightClass = () => {
     switch (size) {
       case 'sm':
         return 'h-7 sm:h-8';
@@ -37,140 +47,124 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         return 'h-16 sm:h-20 md:h-24';
       case 'responsive':
       default:
-        return 'h-[var(--logo-fluid-compact-height,36px)]';
+        return 'h-[clamp(34px,3.8vw,48px)]';
     }
   };
 
-  const getAspectClass = (v: BrandLogoVariant) => {
-    switch (v) {
-      case 'icon':
-        return 'aspect-square';
-      case 'full':
-        return 'aspect-[740/447]';
-      case 'compact':
-      case 'responsive':
-      default:
-        return 'aspect-[740/346]';
-    }
+  const getAspectStyle = (v: 'full' | 'icon') => {
+    return v === 'icon'
+      ? { aspectRatio: branding.aspectRatio.icon }
+      : { aspectRatio: branding.aspectRatio.full };
   };
-
-  const badgeClass = withBadgeInDark
-    ? 'dark:bg-white/95 dark:backdrop-blur-md dark:px-2.5 dark:py-1 dark:rounded-2xl dark:shadow-md dark:shadow-emerald-950/20 transition-all'
-    : '';
 
   const cursorClass = clickable || onClick ? 'cursor-pointer hover:opacity-95 active:scale-[0.98] transition-transform' : '';
 
+  // Render an individual image element for a specific theme and type
+  const renderImage = (theme: 'light' | 'dark', isIcon: boolean, extraClasses = '') => {
+    const assets = branding[theme][isIcon ? 'icon' : 'full'];
+    const dims = isIcon ? branding.dimensions.icon : branding.dimensions.full;
+
+    return (
+      <picture className={`${extraClasses} select-none block shrink-0`}>
+        <source srcSet={assets.webp} type="image/webp" />
+        <source srcSet={assets.svg} type="image/svg+xml" />
+        <img
+          src={assets.png}
+          alt={alt}
+          width={dims.width}
+          height={dims.height}
+          fetchPriority={priority ? 'high' : 'auto'}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          className={`w-auto ${getHeightClass()} object-contain block`}
+          style={{
+            ...getAspectStyle(isIcon ? 'icon' : 'full'),
+            maxHeight: '100%',
+          }}
+        />
+      </picture>
+    );
+  };
+
+  // 1. Icon-only variant
   if (variant === 'icon') {
     return (
       <div
-        className={`inline-flex items-center justify-center shrink-0 select-none ${cursorClass} ${badgeClass} ${className}`}
+        className={`inline-flex items-center justify-center shrink-0 select-none ${cursorClass} ${className}`}
         onClick={onClick}
         role={onClick ? 'button' : undefined}
       >
-        <picture>
-          <source srcSet="/brand/logo-icon.webp" type="image/webp" />
-          <img
-            src="/brand/logo-icon.png"
-            alt={alt}
-            width={512}
-            height={512}
-            fetchPriority={priority ? 'high' : 'auto'}
-            loading={priority ? 'eager' : 'lazy'}
-            className={`w-auto ${getHeightClasses()} aspect-square object-contain block`}
-            style={{ maxHeight: '100%' }}
-          />
-        </picture>
+        {forceTheme === 'light' ? (
+          renderImage('light', true)
+        ) : forceTheme === 'dark' ? (
+          renderImage('dark', true)
+        ) : (
+          <>
+            {/* Zero-Flash Dual rendering: CSS controls display based on .dark class on <html> */}
+            {renderImage('light', true, 'dark:hidden block')}
+            {renderImage('dark', true, 'hidden dark:block')}
+          </>
+        )}
       </div>
     );
   }
 
-  if (variant === 'full') {
-    return (
-      <div
-        className={`inline-flex items-center justify-center shrink-0 select-none ${cursorClass} ${badgeClass} ${className}`}
-        onClick={onClick}
-        role={onClick ? 'button' : undefined}
-      >
-        <picture>
-          <source srcSet="/brand/logo-full.webp" type="image/webp" />
-          <img
-            src="/brand/logo-full.png"
-            alt={alt}
-            width={740}
-            height={447}
-            fetchPriority={priority ? 'high' : 'auto'}
-            loading={priority ? 'eager' : 'lazy'}
-            className={`w-auto ${getHeightClasses()} ${getAspectClass('full')} object-contain block`}
-            style={{ maxHeight: '100%' }}
-          />
-        </picture>
-      </div>
-    );
-  }
-
+  // 2. Responsive variant: Icon on narrow screens (< 360px), Full/Compact on wider screens
   if (variant === 'responsive') {
     return (
       <div
-        className={`inline-flex items-center shrink-0 select-none ${cursorClass} ${badgeClass} ${className}`}
+        className={`inline-flex items-center shrink-0 select-none ${cursorClass} ${className}`}
         onClick={onClick}
         role={onClick ? 'button' : undefined}
       >
-        {/* On extra-narrow screens (< 380px), show clean icon to prevent navbar overflow */}
-        <div className="flex min-[380px]:hidden items-center">
-          <picture>
-            <source srcSet="/brand/logo-icon.webp" type="image/webp" />
-            <img
-              src="/brand/logo-icon.png"
-              alt={alt}
-              width={512}
-              height={512}
-              fetchPriority={priority ? 'high' : 'auto'}
-              loading={priority ? 'eager' : 'lazy'}
-              className="h-8 w-8 aspect-square object-contain block"
-            />
-          </picture>
+        {/* Extra narrow screen icon lockup */}
+        <div className="flex min-[360px]:hidden items-center">
+          {forceTheme === 'light' ? (
+            renderImage('light', true)
+          ) : forceTheme === 'dark' ? (
+            renderImage('dark', true)
+          ) : (
+            <>
+              {renderImage('light', true, 'dark:hidden block')}
+              {renderImage('dark', true, 'hidden dark:block')}
+            </>
+          )}
         </div>
 
-        {/* On standard mobile, tablet and desktop (>= 380px), show Compact Logo (Icon + Wasl Al-Islamiyyah) */}
-        <div className="hidden min-[380px]:flex items-center">
-          <picture>
-            <source srcSet="/brand/logo-compact.webp" type="image/webp" />
-            <img
-              src="/brand/logo-compact.png"
-              alt={alt}
-              width={740}
-              height={346}
-              fetchPriority={priority ? 'high' : 'auto'}
-              loading={priority ? 'eager' : 'lazy'}
-              className={`w-auto ${getHeightClasses()} ${getAspectClass('compact')} object-contain block`}
-              style={{ maxHeight: '100%' }}
-            />
-          </picture>
+        {/* Standard screen full lockup (>= 360px) */}
+        <div className="hidden min-[360px]:flex items-center">
+          {forceTheme === 'light' ? (
+            renderImage('light', false)
+          ) : forceTheme === 'dark' ? (
+            renderImage('dark', false)
+          ) : (
+            <>
+              {renderImage('light', false, 'dark:hidden block')}
+              {renderImage('dark', false, 'hidden dark:block')}
+            </>
+          )}
         </div>
       </div>
     );
   }
 
-  // Default compact
+  // 3. Full / Compact variant (Default)
   return (
     <div
-      className={`inline-flex items-center shrink-0 select-none ${cursorClass} ${badgeClass} ${className}`}
+      className={`inline-flex items-center shrink-0 select-none ${cursorClass} ${className}`}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
     >
-      <picture>
-        <source srcSet="/brand/logo-compact.webp" type="image/webp" />
-        <img
-          src="/brand/logo-compact.png"
-          alt={alt}
-          width={740}
-          height={346}
-          fetchPriority={priority ? 'high' : 'auto'}
-          loading={priority ? 'eager' : 'lazy'}
-          className={`w-auto ${getHeightClasses()} ${getAspectClass('compact')} object-contain block`}
-          style={{ maxHeight: '100%' }}
-        />
-      </picture>
+      {forceTheme === 'light' ? (
+        renderImage('light', false)
+      ) : forceTheme === 'dark' ? (
+        renderImage('dark', false)
+      ) : (
+        <>
+          {renderImage('light', false, 'dark:hidden block')}
+          {renderImage('dark', false, 'hidden dark:block')}
+        </>
+      )}
     </div>
   );
 };

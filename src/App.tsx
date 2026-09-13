@@ -27,6 +27,7 @@ import { TasbihView } from './views/TasbihView';
 import { FatwaArticlesView } from './views/FatwaArticlesView';
 import { DonationsView } from './views/DonationsView';
 import { BinBazView } from './views/BinBazView';
+import { DailyWirdView } from './views/DailyWirdView';
 import { UserDashboardView } from './views/UserDashboardView';
 import { LoginView } from './views/LoginView';
 import { AdminView } from './views/AdminView';
@@ -44,6 +45,7 @@ function AppContent() {
       if (path === 'dashboard') return 'dashboard';
       if (path === 'login') return 'login';
       if (path === 'register') return 'register';
+      if (path === 'wird') return 'wird';
       if (path === 'quran-radio') return 'quran-radio';
       if (path === 'quran') return 'quran';
       if (path === 'azkar') return 'azkar';
@@ -81,6 +83,8 @@ function AppContent() {
       localStorage.setItem('wasl_theme', 'dark');
       const meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.setAttribute('content', '#031f18');
+      const favicon = document.querySelector('link[rel="icon"][type="image/png"]');
+      if (favicon) favicon.setAttribute('href', '/branding/favicon-dark.png');
     } else {
       root.classList.remove('dark');
       body.classList.remove('dark');
@@ -89,6 +93,8 @@ function AppContent() {
       localStorage.setItem('wasl_theme', 'light');
       const meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.setAttribute('content', '#062e24');
+      const favicon = document.querySelector('link[rel="icon"][type="image/png"]');
+      if (favicon) favicon.setAttribute('href', '/branding/favicon-light.png');
     }
   }, [isDarkMode]);
 
@@ -191,6 +197,8 @@ function AppContent() {
         return <LoginView onNavigate={handleNavigate} initialMode="signin" />;
       case 'register':
         return <LoginView onNavigate={handleNavigate} initialMode="signup" />;
+      case 'wird':
+        return <DailyWirdView onNavigate={handleNavigate} />;
       case 'quran-radio':
         return <QuranRadioView onNavigate={handleNavigate} />;
       case 'quran':

@@ -37,6 +37,7 @@ import { BrandLogo } from '../components/brand/BrandLogo';
 import { useAdmin } from '../context/AdminContext';
 import { useShareModal } from '../context/ShareContext';
 import { AdminRadioManager } from '../components/AdminRadioManager';
+import { AdminWirdManager } from '../components/admin/AdminWirdManager';
 import { AdminContentItem, AdminSectionItem, AuditLogEntry } from '../types/admin';
 import { DonationPlatform } from '../types/donations';
 import { BinBazLinkItem } from '../types/binbaz';
@@ -48,7 +49,7 @@ interface AdminViewProps {
   onNavigate: (tab: string, contextId?: any) => void;
 }
 
-type AdminTab = 'overview' | 'content' | 'sections' | 'share-cards' | 'radio' | 'donations' | 'binbaz' | 'users' | 'audit';
+type AdminTab = 'overview' | 'wird' | 'content' | 'sections' | 'share-cards' | 'radio' | 'donations' | 'binbaz' | 'users' | 'audit';
 
 export const AdminView: React.FC<AdminViewProps> = ({ onNavigate }) => {
   const { adminUsername, logoutAdmin, isAdminAuthenticated, isLoadingAdminAuth } = useAdmin();
@@ -580,6 +581,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ onNavigate }) => {
   // Navigation Items
   const navTabs = [
     { id: 'overview', label: 'لوحة المؤشرات', icon: LayoutDashboard },
+    { id: 'wird', label: 'إدارة ورد اليوم', icon: Sparkles },
     { id: 'content', label: 'المحتوى الإسلامي', icon: BookOpen, badge: contentList.length },
     { id: 'sections', label: 'إدارة الأقسام', icon: FolderTree, badge: sectionsList.length },
     { id: 'donations', label: 'الصدقة والتبرع', icon: HandHeart, badge: donationsList.length },
@@ -988,6 +990,9 @@ export const AdminView: React.FC<AdminViewProps> = ({ onNavigate }) => {
               </div>
             </div>
           )}
+
+          {/* TAB: DAILY WIRD MANAGER */}
+          {activeTab === 'wird' && <AdminWirdManager />}
 
           {/* TAB 2: ISLAMIC CONTENT MANAGEMENT */}
           {activeTab === 'content' && (

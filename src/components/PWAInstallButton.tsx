@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Download, Share2, X } from 'lucide-react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { useModalScrollLock } from '../hooks/useModalScrollLock';
+import { BrandLogo } from './brand/BrandLogo';
 
 interface Props {
   variant?: 'header' | 'hero' | 'banner' | 'icon';
@@ -73,7 +74,7 @@ export const PWAInstallButton: React.FC<Props> = ({ variant = 'header' }) => {
             <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-emerald-950 p-6 shadow-2xl border border-emerald-100 dark:border-emerald-800 text-right overscroll-contain" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-emerald-900/60 mb-4">
                 <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <img src="/brand/logo-icon.webp" alt="وصل الإسلامية" className="w-6 h-6 rounded-lg object-contain shrink-0" />
+                  <BrandLogo variant="icon" size="sm" className="w-6 h-6 rounded-lg" />
                   <span>تثبيت تطبيق وصل على آيفون / آيباد</span>
                 </h3>
                 <button

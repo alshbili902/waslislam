@@ -1101,3 +1101,120 @@ adminRouter.delete('/binbaz/:id', (req: Request, res: Response) => {
   res.json({ ok: true, id });
 });
 
+// ==========================================
+// 12. Daily Wird (إدارة ورد اليوم)
+// ==========================================
+export interface AdminScheduledWird {
+  id: string;
+  date: string;
+  title: string;
+  subtitle: string;
+  status: 'published' | 'draft';
+  isFriday: boolean;
+  isRamadan: boolean;
+  items: any[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+let adminScheduledWirds: AdminScheduledWird[] = [];
+
+export function getPublicWirdForDate(dateString: string): AdminScheduledWird | null {
+  const match = adminScheduledWirds.find((w) => w.date === dateString && w.status === 'published');
+  return match || null;
+}
+
+// GET /api/admin/wird
+adminRouter.get('/wird', (req: Request, res: Response) => {
+  res.json({
+    wirds: adminScheduledWirds,
+    count: adminScheduledWirds.length,
+  });
+});
+
+// POST /api/admin/wird
+adminRouter.post('/wird', (req: Request, res: Response) => {
+  const { id, date, title, subtitle, status, isFriday, isRamadan, items } = req.body || {};
+
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: 'صيغة التاريخ غير صحيحة (يجب أن تكون YYYY-MM-DD)' });
+  }
+
+  if (!title || typeof title !== 'string' || title.trim().length === 0) {
+    return res.status(400).json({ error: 'عنوان ورد اليوم مطلوب' });
+  }
+
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'يجب أن يحتوي ورد اليوم على عناصر موثقة' });
+  }
+
+  // Religious Content Verification Enforcement
+  for (const item of items) {
+    if (!item.type) {
+      return res.status(400).json({ error: 'نوع العنصر مطلوب' });
+    }
+    if (item.type === 'quran') {
+      if (!item.quranData?.surahNumber || item.quranData.surahNumber < 1 || item.quranData.surahNumber > 114) {
+        return res.status(400).json({ error: 'رقم سورة القرآن يجب أن يكون بين 1 و 114' });
+      }
+      if (!item.quranData?.ayahText) {
+        return res.status(400).json({ error: 'نص الآيات القرآنية مطلوب ويجب أن يكون موثقاً' });
+      }
+    } else if (item.type === 'hadith') {
+      if (!item.hadithData?.textAr || !item.hadithData?.collectionAr) {
+        return res.status(400).json({ error: 'نص وتخريج الحديث النبوي الشريف مطلوب من المصادر المعتمدة' });
+      }
+    } else if (item.type === 'dhikr') {
+      if (!item.dhikrData?.textAr || !item.dhikrData?.sourceAr) {
+        return res.status(400).json({ error: 'نص ومصدر الذكر مطلوب' });
+      }
+    } else if (item.type === 'dua') {
+      if (!item.duaData?.textAr || !item.duaData?.sourceAr) {
+        return res.status(400).json({ error: 'نص ومصدر الدعاء مطلوب' });
+      }
+    }
+  }
+
+  const existingIndex = adminScheduledWirds.findIndex((w) => w.id === id || w.date === date);
+  const now = new Date().toISOString();
+
+  const record: AdminScheduledWird = {
+    id: id || `wird-scheduled-${date}`,
+    date,
+    title: sanitizeInput(title),
+    subtitle: sanitizeInput(subtitle || 'خذ من يومك دقائق تقرّبك إلى الله'),
+    status: status === 'draft' ? 'draft' : 'published',
+    isFriday: Boolean(isFriday),
+    isRamadan: Boolean(isRamadan),
+    items,
+    createdAt: existingIndex >= 0 ? adminScheduledWirds[existingIndex].createdAt : now,
+    updatedAt: now,
+  };
+
+  if (existingIndex >= 0) {
+    adminScheduledWirds[existingIndex] = record;
+    logAuditEvent('Update Daily Wird', 'DailyWird', record.id, 'success', `تعديل ورد اليوم لتاريخ: ${date}`, req.ip);
+  } else {
+    adminScheduledWirds.unshift(record);
+    logAuditEvent('Create Daily Wird', 'DailyWird', record.id, 'success', `إنشاء ورد يومي جديد لتاريخ: ${date}`, req.ip);
+  }
+
+  return res.json({ ok: true, wird: record });
+});
+
+// DELETE /api/admin/wird/:id
+adminRouter.delete('/wird/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const index = adminScheduledWirds.findIndex((w) => w.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ error: 'الورد غير موجود' });
+  }
+
+  const deleted = adminScheduledWirds.splice(index, 1)[0];
+  logAuditEvent('Delete Daily Wird', 'DailyWird', id, 'warning', `حذف ورد اليوم لتاريخ: ${deleted.date}`, req.ip);
+
+  res.json({ ok: true, id });
+});
+
+

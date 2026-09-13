@@ -5,7 +5,7 @@ import http from 'http';
 import os from 'os';
 import QRCode from 'qrcode';
 import { createServer as createViteServer } from 'vite';
-import { adminRouter, getPublicDonations, getPublicBinBazLinks } from './server-admin';
+import { adminRouter, getPublicDonations, getPublicBinBazLinks, getPublicWirdForDate } from './server-admin';
 import { userAuthRouter } from './server-user-auth';
 
 async function startServer() {
@@ -43,6 +43,21 @@ async function startServer() {
   // API Health check
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
+  });
+
+  // Public Daily Wird Endpoints
+  app.get(['/api/wird', '/api/wird/today'], (req, res) => {
+    const dateParam = (req.query.date as string) || new Date().toISOString().split('T')[0];
+    const scheduled = getPublicWirdForDate(dateParam);
+    if (scheduled) {
+      return res.json({ wird: scheduled, source: 'admin_scheduled' });
+    }
+    return res.json({ wird: null, source: 'deterministic_verified' });
+  });
+
+  // Daily Wird Progress sync endpoint
+  app.post('/api/wird/progress', (req, res) => {
+    res.json({ ok: true });
   });
 
   // Public Donation Platforms Endpoint

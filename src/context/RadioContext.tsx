@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { RadioCategory, RadioReciter, RadioStation } from '../types';
 import { radioService } from '../services/radioService';
+import { branding } from '../config/branding';
 
 interface RadioContextType {
   currentStation: RadioStation | null;
@@ -142,7 +143,7 @@ export const RadioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         album: 'وصل الإسلامية - إذاعة القرآن الكريم',
         artwork: [
           {
-            src: '/brand/logo-icon.png',
+            src: branding.dark.icon.png,
             sizes: '512x512',
             type: 'image/png',
           },

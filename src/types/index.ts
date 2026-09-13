@@ -211,6 +211,8 @@ export interface NotificationSettings {
   dailyHadith: boolean;
   dailyAyah: boolean;
   islamicEvents: boolean;
+  dailyWird?: boolean;
+  wirdReminderTime?: string;
 }
 
 export interface UserProfile {
@@ -372,3 +374,4 @@ export interface QuranProgressData {
 }
 export * from './donations';
 export * from './binbaz';
+export * from './wird';

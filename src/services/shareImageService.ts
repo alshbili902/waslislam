@@ -306,6 +306,21 @@ export async function renderShareCardToCanvas(options: RenderCardOptions): Promi
       case 'article':
         sectionName = 'المقالات';
         break;
+      case 'wisdom':
+        sectionName = 'الحِكَم والمواعظ';
+        break;
+      case 'allah_name':
+        sectionName = 'أسماء الله الحسنى';
+        break;
+      case 'seerah':
+        sectionName = 'السيرة النبوية ﷺ';
+        break;
+      case 'hajj_umrah':
+        sectionName = 'الحج والعمرة';
+        break;
+      case 'library':
+        sectionName = 'المكتبة الإسلامية';
+        break;
       default:
         sectionName = 'وصل الإسلامية';
     }
@@ -332,6 +347,21 @@ export async function renderShareCardToCanvas(options: RenderCardOptions): Promi
         break;
       case 'article':
         contentType = 'مقال';
+        break;
+      case 'wisdom':
+        contentType = 'حكمة وموعظة';
+        break;
+      case 'allah_name':
+        contentType = 'اسم من أسماء الله الحسنى';
+        break;
+      case 'seerah':
+        contentType = 'قبس من السيرة';
+        break;
+      case 'hajj_umrah':
+        contentType = 'دليل المناسك';
+        break;
+      case 'library':
+        contentType = 'فائدة من كتاب';
         break;
       default:
         contentType = 'محتوى موثق';

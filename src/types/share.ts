@@ -1,12 +1,15 @@
-export type ShareContentType = 'hadith' | 'dhikr' | 'dua' | 'quran' | 'article' | 'fatwa';
+export type ShareContentType = 'hadith' | 'dhikr' | 'dua' | 'quran' | 'article' | 'fatwa' | 'wisdom' | 'allah_name' | 'seerah' | 'hajj_umrah' | 'library';
 
 export interface ShareItemData {
   sectionName?: string; // e.g. "أذكار الصباح", "القرآن الكريم", "الأحاديث النبوية"
   contentType?: string; // e.g. "ذكر", "آية", "حديث", "دعاء", "فتوى", "مقال"
   content?: string;     // verified text
   text?: string;        // verified text (compatible with either text or content)
+  subtext?: string;     // contextual or location/meaning text
   type?: ShareContentType;
   source?: string;
+  reference?: string;
+  sourceUrl?: string;
   hijriDate?: string;
   ramadanCountdown?: string;
   title?: string;
@@ -36,7 +39,7 @@ export interface ShareSystemConfig {
 
 export const DEFAULT_SHARE_CONFIG: ShareSystemConfig = {
   enabled: true,
-  supportedTypes: ['hadith', 'dhikr', 'dua', 'quran', 'article', 'fatwa'],
+  supportedTypes: ['hadith', 'dhikr', 'dua', 'quran', 'article', 'fatwa', 'wisdom', 'allah_name', 'seerah', 'hajj_umrah', 'library'],
   primaryFont: 'Amiri',
   maxChars: 450,
   platformUrl: 'https://waslislam.fun'

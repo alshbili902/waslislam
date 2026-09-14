@@ -250,6 +250,7 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
                 { key: 'eveningAzkar', label: 'تذكير أذكار المساء' },
                 { key: 'dailyHadith', label: 'إشعار الحديث اليومي' },
                 { key: 'dailyAyah', label: 'إشعار الآية اليومية' },
+                { key: 'dailyWisdom', label: 'تذكير الحكمة اليومية (الحِكَم والمواعظ)' },
                 { key: 'islamicEvents', label: 'المناسبات والشهور الهجرية' },
               ].map((item) => (
                 <label

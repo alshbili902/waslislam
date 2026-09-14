@@ -5,7 +5,16 @@ import http from 'http';
 import os from 'os';
 import QRCode from 'qrcode';
 import { createServer as createViteServer } from 'vite';
-import { adminRouter, getPublicDonations, getPublicBinBazLinks, getPublicWirdForDate } from './server-admin';
+import {
+  adminRouter,
+  getPublicDonations,
+  getPublicBinBazLinks,
+  getPublicWirdForDate,
+  getPublicWisdoms,
+  getPublicDailyWisdom,
+  getPublicWisdomById,
+  getPublicWisdomCategories
+} from './server-admin';
 import { userAuthRouter } from './server-user-auth';
 
 async function startServer() {
@@ -69,6 +78,12 @@ async function startServer() {
   app.get('/api/binbaz', (req, res) => {
     res.json({ links: getPublicBinBazLinks() });
   });
+
+  // Public Islamic Wisdoms & Reflections Endpoints
+  app.get('/api/wisdoms/categories', getPublicWisdomCategories);
+  app.get('/api/wisdoms/daily', getPublicDailyWisdom);
+  app.get('/api/wisdoms/:id', getPublicWisdomById);
+  app.get('/api/wisdoms', getPublicWisdoms);
 
   // Radio Stream Validation Endpoint
   app.post('/api/radio/validate-stream', (req, res) => {

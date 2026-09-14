@@ -183,7 +183,7 @@ export interface QuranBookmark {
 
 export interface UserFavorite {
   id: string;
-  type: 'ayah' | 'hadith' | 'azkar' | 'dua' | 'fatwa' | 'article';
+  type: 'ayah' | 'hadith' | 'azkar' | 'dua' | 'fatwa' | 'article' | 'wisdom' | 'allah_name' | 'seerah' | 'hajj_umrah' | 'library_book';
   referenceId: string;
   title: string;
   subtitle?: string;
@@ -213,6 +213,7 @@ export interface NotificationSettings {
   islamicEvents: boolean;
   dailyWird?: boolean;
   wirdReminderTime?: string;
+  dailyWisdom?: boolean;
 }
 
 export interface UserProfile {
@@ -375,3 +376,155 @@ export interface QuranProgressData {
 export * from './donations';
 export * from './binbaz';
 export * from './wird';
+export * from './wisdom';
+
+// ==========================================
+// 1. FASTING TYPES (صيامي)
+// ==========================================
+export type FastingType = 'ramadan' | 'monday' | 'thursday' | 'white_days' | 'ashura' | 'arafah' | 'shawwal' | 'qada' | 'nadr' | 'voluntary';
+export type FastingStatus = 'completed' | 'planned' | 'missed';
+
+export interface FastingRecord {
+  id: string;
+  user_id?: string;
+  userId?: string;
+  fasting_date: string; // YYYY-MM-DD
+  gregorianDate?: string;
+  hijri_date?: string;
+  hijriYear?: number;
+  hijriMonth?: number;
+  hijriDay?: number;
+  fasting_type: string;
+  fastingType?: FastingType;
+  status: 'completed' | 'planned' | 'missed';
+  notes?: string;
+  created_at?: string;
+  createdAt?: string;
+}
+
+// ==========================================
+// 2. NAMES OF ALLAH TYPES (أسماء الله الحسنى)
+// ==========================================
+export interface AllahNameItem {
+  id: string;
+  number: number;
+  nameAr: string;
+  nameEn?: string;
+  meaningAr: string;
+  explanationAr?: string;
+  evidenceAr?: string;
+  source: string;
+  reference?: string;
+  category?: string;
+  verificationStatus: 'verified' | 'draft' | 'needs_review';
+}
+
+// ==========================================
+// 3. PROPHETIC BIOGRAPHY TYPES (السيرة النبوية ﷺ)
+// ==========================================
+export interface SeerahEvent {
+  id: string;
+  era: 'pre_prophethood' | 'meccan_early' | 'meccan_public' | 'isra_miraj' | 'hijrah' | 'medinan_foundations' | 'major_battles' | 'fath_makkah' | 'farewell_passing';
+  eraTitleAr: string;
+  title: string;
+  hijriYear?: string;
+  gregorianYear?: string;
+  location?: string;
+  orderIndex: number;
+  summary: string;
+  content: string;
+  evidence?: string;
+  source: string;
+  reference?: string;
+  verificationStatus: 'verified' | 'draft' | 'needs_review';
+}
+
+// ==========================================
+// 4. HAJJ & UMRAH TYPES (الحج والعمرة)
+// ==========================================
+export interface HajjUmrahStep {
+  id: string;
+  type: 'umrah' | 'hajj' | 'miqat' | 'manasik' | 'ruling' | 'dua';
+  title: string;
+  stepNumber?: number;
+  dayNumber?: number; // for Hajj (8, 9, 10, 11-13)
+  dayNameAr?: string;
+  description: string;
+  evidence?: string;
+  ruling?: 'rukn' | 'wajib' | 'sunnah' | 'prohibition';
+  notes?: string;
+  checklistItem?: string;
+  coordinates?: { lat: number; lng: number; nameAr: string };
+  source: string;
+  reference?: string;
+  verificationStatus: 'verified' | 'draft' | 'needs_review';
+}
+
+// ==========================================
+// 5. ISLAMIC LIBRARY TYPES (المكتبة الإسلامية)
+// ==========================================
+export interface LibraryChapter {
+  id: string;
+  title: string;
+  content: string;
+  orderIndex: number;
+}
+
+export interface LibraryBook {
+  id: string;
+  title: string;
+  author: string;
+  category: string;
+  coverUrl?: string;
+  description: string;
+  publisher?: string;
+  edition?: string;
+  license: string;
+  copyrightStatus: string;
+  chapters: LibraryChapter[];
+  source: string;
+  verificationStatus: 'verified' | 'draft' | 'needs_review';
+}
+
+export interface LibraryBookProgress {
+  bookId: string;
+  chapterId?: string;
+  scrollPosition?: number;
+  completed?: boolean;
+  lastReadAt: string;
+}
+
+// ==========================================
+// 6. GLOBAL SEARCH TYPES (البحث الشامل)
+// ==========================================
+export type SearchDomain = 'quran' | 'hadith' | 'azkar' | 'dua' | 'wisdom' | 'allah_name' | 'seerah' | 'hajj_umrah' | 'library' | 'events';
+
+export interface GlobalSearchResult {
+  id: string;
+  domain: SearchDomain;
+  domainLabelAr: string;
+  title: string;
+  snippet: string;
+  targetTab: string;
+  targetId?: any;
+  badge?: string;
+  source?: string;
+}
+
+// ==========================================
+// 7. DISCOVER FEED TYPES (اكتشف)
+// ==========================================
+export interface DiscoverFeedData {
+  date: string;
+  hijriDate: string;
+  ayah: { text: string; surahName: string; ayahNumber: number; tafsir: string };
+  hadith: { text: string; narrator: string; source: string; explanation?: string };
+  dhikr: { text: string; source: string; benefit?: string };
+  dua: { text: string; source: string };
+  wisdom: { text: string; author?: string; source: string; category: string };
+  allahName: AllahNameItem;
+  seerahHighlight: SeerahEvent;
+  libraryPick?: LibraryBook;
+  featureHighlight: { title: string; desc: string; targetTab: string; icon: string };
+}
+

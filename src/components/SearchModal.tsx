@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, BookOpen, Heart, Sparkles, HelpCircle, ArrowLeft, Radio, HandHeart, Award } from 'lucide-react';
+import { Search, X, BookOpen, Heart, Sparkles, HelpCircle, ArrowLeft, Radio, HandHeart, Award, Quote } from 'lucide-react';
 import { SURAHS_LIST } from '../data/quranMetadata';
 import { AZKAR_DATA } from '../data/azkarData';
 import { HADITH_DATA } from '../data/hadithData';
@@ -9,6 +9,7 @@ import { FATWA_DATA } from '../data/fatwaData';
 import { DEFAULT_RADIO_STATIONS } from '../data/radioData';
 import { INITIAL_DONATION_PLATFORMS } from '../data/donationData';
 import { INITIAL_BINBAZ_LINKS } from '../data/binbazData';
+import { INITIAL_WISDOMS } from '../data/wisdomsData';
 import { normalizeArabicText } from '../services/quranService';
 import { useModalScrollLock } from '../hooks/useModalScrollLock';
 
@@ -20,7 +21,7 @@ interface Props {
 
 interface SearchResult {
   id: string;
-  type: 'quran' | 'azkar' | 'hadith' | 'dua' | 'fatwa' | 'radio' | 'donations' | 'binbaz';
+  type: 'quran' | 'azkar' | 'hadith' | 'dua' | 'fatwa' | 'radio' | 'donations' | 'binbaz' | 'wisdom';
   title: string;
   snippet: string;
   badge: string;
@@ -190,6 +191,27 @@ export const SearchModal: React.FC<Props> = ({ isOpen, onClose, onNavigate }) =>
       }
     });
 
+    // Search Islamic Wisdoms & Reflections
+    INITIAL_WISDOMS.forEach((w) => {
+      if (
+        normalizeArabicText(w.content).includes(norm) ||
+        (w.author && normalizeArabicText(w.author).includes(norm)) ||
+        (w.source && normalizeArabicText(w.source).includes(norm)) ||
+        normalizeArabicText(w.category).includes(norm) ||
+        normalizeArabicText(w.contentType).includes(norm)
+      ) {
+        list.push({
+          id: `wisdom-${w.id}`,
+          type: 'wisdom',
+          title: `${w.contentType}: في ${w.category}${w.author ? ` (${w.author})` : ''}`,
+          snippet: w.content.slice(0, 120) + '...',
+          badge: 'حِكمة وموعظة',
+          targetTab: 'wisdoms',
+          targetId: w.id,
+        });
+      }
+    });
+
     setResults(list.slice(0, 12));
   }, [query]);
 
@@ -275,6 +297,8 @@ export const SearchModal: React.FC<Props> = ({ isOpen, onClose, onNavigate }) =>
                     ? Radio
                     : r.type === 'hadith'
                     ? Sparkles
+                    : r.type === 'wisdom'
+                    ? Quote
                     : r.type === 'fatwa'
                     ? HelpCircle
                     : r.type === 'donations'

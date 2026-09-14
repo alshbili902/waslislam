@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Menu,
   X,
@@ -21,7 +21,12 @@ import {
   LogIn,
   HandHeart,
   Award,
-  CheckCircle2
+  CheckCircle2,
+  Quote,
+  ChevronDown,
+  MapPin,
+  Library,
+  Flame as FastingIcon
 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { BrandLogo } from './brand/BrandLogo';
@@ -35,6 +40,18 @@ interface HeaderProps {
   onToggleTheme: () => void;
 }
 
+interface DropdownGroup {
+  id: string;
+  label: string;
+  icon: any;
+  items: {
+    id: string;
+    label: string;
+    icon: any;
+    desc?: string;
+  }[];
+}
+
 export const Header: React.FC<HeaderProps> = ({
   currentTab,
   onSelectTab,
@@ -43,31 +60,84 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleTheme
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated } = useUser();
 
-  const navItems = [
-    { id: 'home', label: 'الرئيسية', icon: Sparkles },
-    { id: 'wird', label: 'ورد اليوم', icon: CheckCircle2 },
-    { id: 'quran-radio', label: 'إذاعة القرآن', icon: Radio },
-    { id: 'quran', label: 'القرآن الكريم', icon: BookOpen },
-    { id: 'azkar', label: 'الأذكار', icon: Heart },
-    { id: 'hadith', label: 'الأحاديث', icon: Sparkles },
-    { id: 'dua', label: 'الأدعية', icon: Heart },
-    { id: 'prayer', label: 'المواقيت والقبلة', icon: Compass },
-    { id: 'calendar', label: 'التقويم الهجري', icon: Calendar },
-    { id: 'tasbih', label: 'المسبحة', icon: Layers },
-    { id: 'fatwa', label: 'الفتاوى والمعرفة', icon: HelpCircle },
-    { id: 'donations', label: 'الصدقة والتبرع', icon: HandHeart },
-    { id: 'binbaz', label: 'ابن باز', icon: Award },
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setActiveDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Desktop Dropdown Groups per User Specifications
+  const dropdownGroups: DropdownGroup[] = [
+    {
+      id: 'prayer_group',
+      label: 'المواقيت والقبلة',
+      icon: Compass,
+      items: [
+        { id: 'prayer-times', label: 'مواقيت الصلاة', icon: Clock, desc: 'أوقات الأذان والعد التنازلي' },
+        { id: 'prayer', label: 'اتجاه القبلة', icon: Compass, desc: 'بوصلة الكعبة المشرفة المباشرة' },
+        { id: 'calendar', label: 'التاريخ الهجري', icon: Calendar, desc: 'تقويم أم القرى والمناسبات' }
+      ]
+    },
+    {
+      id: 'ibadah_group',
+      label: 'العبادة',
+      icon: CheckCircle2,
+      items: [
+        { id: 'wird', label: 'ورد اليوم', icon: CheckCircle2, desc: 'محاسبة العبادات والأوراد' },
+        { id: 'fasting', label: 'صيامي', icon: Calendar, desc: 'سجل الصيام وتقويم النوافل' },
+        { id: 'tasbih', label: 'المسبحة الإلكترونية', icon: Layers, desc: 'عداد الأذكار والاستغفار' },
+        { id: 'quran', label: 'ختمة القرآن', icon: BookOpen, desc: 'تلاوة المصحف ومتابعة الختمات' },
+        { id: 'azkar', label: 'حصن المسلم', icon: Heart, desc: 'أذكار الصباح والمساء' },
+        { id: 'dua', label: 'الأدعية المأثورة', icon: Sparkles, desc: 'أدعية الكتاب والسنة' }
+      ]
+    },
+    {
+      id: 'knowledge_group',
+      label: 'المعرفة الإسلامية',
+      icon: BookOpen,
+      items: [
+        { id: 'names-of-allah', label: 'أسماء الله الحسنى', icon: Award, desc: '99 اسماً موثقاً مع الشرح' },
+        { id: 'seerah', label: 'السيرة النبوية ﷺ', icon: Compass, desc: 'الخط الزمني الشامل الموثق' },
+        { id: 'library', label: 'المكتبة الإسلامية', icon: Library, desc: 'أمهات الكتب الكلاسيكية والتفاسير' },
+        { id: 'wisdoms', label: 'الحِكَم والمواعظ', icon: Quote, desc: 'رقائق وتأملات إيمانية موثقة' },
+        { id: 'hadith', label: 'الأحاديث النبوية', icon: Sparkles, desc: 'رياض الصالحين والأربعون النووية' },
+        { id: 'fatwa', label: 'الفتاوى وقصص الأنبياء', icon: HelpCircle, desc: 'مقالات وأحكام شرعية' },
+        { id: 'binbaz', label: 'فتاوى ابن باز', icon: Award, desc: 'موسوعة الشيخ ابن باز رحمه الله' }
+      ]
+    },
+    {
+      id: 'hajj_group',
+      label: 'الحج والعمرة',
+      icon: MapPin,
+      items: [
+        { id: 'hajj-umrah', label: 'دليل العمرة خطوة بخطوة', icon: MapPin, desc: 'صفة العمرة وأركانها' },
+        { id: 'hajj-umrah', label: 'دليل الحج يوماً بيوم', icon: MapPin, desc: 'أعمال يوم التروية وعرفة والتشريق' },
+        { id: 'hajj-umrah', label: 'المواقيت والمناسك', icon: Compass, desc: 'المواقيت المكانية وأحكام الإحرام' }
+      ]
+    }
   ];
 
   const handleNavClick = (id: string) => {
     onSelectTab(id);
+    setActiveDropdown(null);
     setMobileMenuOpen(false);
   };
 
+  const isTabInGroup = (group: DropdownGroup) => {
+    return group.items.some((item) => item.id === currentTab);
+  };
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-emerald-900/10 dark:border-emerald-500/20 bg-white/90 dark:bg-emerald-950/90 backdrop-blur-md transition-colors">
+    <header className="sticky top-0 z-40 w-full border-b border-emerald-900/10 dark:border-emerald-500/20 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Brand Logo & Name */}
@@ -78,53 +148,139 @@ export const Header: React.FC<HeaderProps> = ({
               clickable
               onClick={() => onSelectTab('home')}
             />
-            <span className="hidden 2xl:inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
-              الإصدار الرقمي
-            </span>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentTab === item.id;
+          {/* Desktop Dropdown Navigation */}
+          <nav ref={dropdownRef} className="hidden lg:flex items-center gap-1 xl:gap-1.5">
+            {/* 1. الرئيسية */}
+            <button
+              onClick={() => onSelectTab('home')}
+              className={`px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                currentTab === 'home'
+                  ? 'bg-emerald-800 text-white shadow-xs'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/40'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>الرئيسية</span>
+            </button>
+
+            {/* 2. اكتشف */}
+            <button
+              onClick={() => onSelectTab('discover')}
+              className={`px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                currentTab === 'discover'
+                  ? 'bg-emerald-800 text-white shadow-xs'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/40'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>اكتشف</span>
+            </button>
+
+            {/* 3. Dropdown Groups */}
+            {dropdownGroups.map((group) => {
+              const isOpen = activeDropdown === group.id;
+              const hasActiveChild = isTabInGroup(group);
+
               return (
-                <button
-                  key={item.id}
-                  onClick={() => onSelectTab(item.id)}
-                  className={`relative flex items-center gap-1 xl:gap-1.5 px-2 xl:px-3 py-1.5 xl:py-2 rounded-xl text-[11px] xl:text-xs font-medium transition-colors ${
-                    isActive
-                      ? 'text-white font-semibold'
-                      : 'text-slate-700 dark:text-slate-200 hover:text-emerald-800 dark:hover:text-white hover:bg-emerald-50 dark:hover:bg-emerald-900/40'
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeHeaderNav"
-                      className="absolute inset-0 bg-emerald-800 dark:bg-emerald-700 rounded-xl shadow-xs"
-                      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                <div key={group.id} className="relative">
+                  <button
+                    onClick={() => setActiveDropdown(isOpen ? null : group.id)}
+                    className={`px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                      hasActiveChild
+                        ? 'bg-emerald-800 text-white shadow-xs'
+                        : 'text-slate-700 dark:text-slate-200 hover:text-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/40'
+                    }`}
+                  >
+                    <span>{group.label}</span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180' : ''
+                      }`}
                     />
-                  )}
-                  <Icon className={`relative z-10 w-3.5 h-3.5 ${isActive ? 'text-amber-300' : 'text-emerald-600 dark:text-emerald-400'}`} />
-                  <span className="relative z-10">{item.label}</span>
-                </button>
+                  </button>
+
+                  {/* Dropdown Menu Modal */}
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-2 w-72 p-2 rounded-2xl bg-white dark:bg-emerald-950 border border-emerald-900/10 dark:border-emerald-800/60 shadow-xl z-50 space-y-1"
+                      >
+                        {group.items.map((item, idx) => {
+                          const IconComp = item.icon;
+                          const isItemActive = currentTab === item.id;
+
+                          return (
+                            <button
+                              key={`${item.id}-${idx}`}
+                              onClick={() => handleNavClick(item.id)}
+                              className={`w-full p-2.5 rounded-xl text-right transition-colors flex items-center gap-3 ${
+                                isItemActive
+                                  ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 font-bold'
+                                  : 'hover:bg-slate-50 dark:hover:bg-emerald-900/30 text-slate-800 dark:text-slate-200'
+                              }`}
+                            >
+                              <span className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300">
+                                <IconComp className="w-4 h-4" />
+                              </span>
+                              <div>
+                                <span className="text-xs font-bold block">{item.label}</span>
+                                {item.desc && (
+                                  <span className="text-[10px] text-slate-400 block">{item.desc}</span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               );
             })}
+
+            {/* إذاعة القرآن */}
+            <button
+              onClick={() => onSelectTab('quran-radio')}
+              className={`px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                currentTab === 'quran-radio'
+                  ? 'bg-emerald-800 text-white shadow-xs'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/40'
+              }`}
+            >
+              <Radio className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>الإذاعة</span>
+            </button>
+
+            {/* الصدقة والتبرع */}
+            <button
+              onClick={() => onSelectTab('donations')}
+              className={`px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                currentTab === 'donations'
+                  ? 'bg-emerald-800 text-white shadow-xs'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/40'
+              }`}
+            >
+              <HandHeart className="w-3.5 h-3.5 text-rose-500" />
+              <span>التبرع</span>
+            </button>
           </nav>
 
-          {/* Right Action Icons */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5">
+          {/* Right Controls: Global Search, Theme, User Profile */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Global Search Button */}
             <button
-              onClick={onOpenSearch}
+              onClick={() => onSelectTab('search')}
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 border border-slate-200 dark:border-emerald-800/60 text-xs transition-colors"
-              title="بحث شامل (Ctrl+K)"
+              title="البحث الشامل في المنصة"
             >
               <Search className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-              <span className="hidden xl:inline">بحث شامل...</span>
-              <kbd className="hidden xl:inline-block px-1.5 py-0.5 text-[10px] rounded bg-slate-100 dark:bg-emerald-900 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-emerald-700">
-                ⌘K
-              </kbd>
+              <span className="hidden xl:inline">البحث الشامل</span>
             </button>
 
             {/* Dark / Light Toggle */}
@@ -136,9 +292,9 @@ export const Header: React.FC<HeaderProps> = ({
               title={isDarkMode ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي'}
             >
               {isDarkMode ? (
-                <Sun className="w-5 h-5 text-amber-400 transition-transform duration-300" />
+                <Sun className="w-5 h-5 text-amber-400" />
               ) : (
-                <Moon className="w-5 h-5 text-emerald-800 transition-transform duration-300" />
+                <Moon className="w-5 h-5 text-emerald-800" />
               )}
             </motion.button>
 
@@ -194,52 +350,72 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Menu (Structured by Section) */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-emerald-900/10 dark:border-emerald-500/20 bg-white/98 dark:bg-emerald-950/98 backdrop-blur-lg px-4 pt-3 pb-6 space-y-2 animate-in slide-in-from-top-2 duration-200">
-          <div className="grid grid-cols-2 gap-2 pt-2 pb-3">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavClick(item.id)}
-                  className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-medium text-right transition-colors ${
-                    isActive
-                      ? 'bg-emerald-800 text-white font-bold'
-                      : 'bg-slate-50 dark:bg-emerald-900/40 text-slate-700 dark:text-slate-200 hover:bg-emerald-100 dark:hover:bg-emerald-800/40'
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-amber-300' : 'text-emerald-600 dark:text-emerald-400'}`} />
-                  <span className="truncate">{item.label}</span>
-                </button>
-              );
-            })}
+        <div className="lg:hidden border-t border-emerald-900/10 dark:border-emerald-500/20 bg-white/98 dark:bg-emerald-950/98 backdrop-blur-lg px-4 pt-3 pb-6 space-y-4 animate-in slide-in-from-top-2 duration-200 max-h-[85vh] overflow-y-auto">
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleNavClick('home')}
+              className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-900 dark:text-emerald-200 font-bold text-xs flex items-center justify-center gap-2"
+            >
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span>الرئيسية</span>
+            </button>
+            <button
+              onClick={() => handleNavClick('discover')}
+              className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 font-bold text-xs flex items-center justify-center gap-2"
+            >
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span>اكتشف اليوم</span>
+            </button>
           </div>
 
-          <div className="pt-2 border-t border-slate-100 dark:border-emerald-900 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {isAuthenticated ? (
-                <button
-                  onClick={() => handleNavClick('dashboard')}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-700 text-white text-xs font-semibold shadow-xs"
-                >
-                  <User className="w-4 h-4" />
-                  <span>لوحة التحكم الشخصية</span>
-                </button>
-              ) : (
-                <button
-                  onClick={() => handleNavClick('login')}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white text-xs font-bold shadow-xs"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>تسجيل الدخول / إنشاء حساب</span>
-                </button>
-              )}
+          {/* Grouped Accordions for Mobile */}
+          {dropdownGroups.map((group) => (
+            <div key={group.id} className="space-y-1.5">
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400 block px-1">
+                {group.label}
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                {group.items.map((item, idx) => {
+                  const IconComp = item.icon;
+                  const isActive = currentTab === item.id;
+                  return (
+                    <button
+                      key={`${item.id}-${idx}`}
+                      onClick={() => handleNavClick(item.id)}
+                      className={`flex items-center gap-2 p-2.5 rounded-xl text-xs font-medium text-right transition-colors ${
+                        isActive
+                          ? 'bg-emerald-800 text-white font-bold'
+                          : 'bg-slate-50 dark:bg-emerald-900/30 text-slate-700 dark:text-slate-200 hover:bg-emerald-100 dark:hover:bg-emerald-800/40'
+                      }`}
+                    >
+                      <IconComp className={`w-4 h-4 shrink-0 ${isActive ? 'text-amber-300' : 'text-emerald-600 dark:text-emerald-400'}`} />
+                      <span className="truncate">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+          ))}
 
-            <PWAInstallButton variant="header" />
+          {/* Additional Links */}
+          <div className="pt-2 border-t border-slate-100 dark:border-emerald-900 grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handleNavClick('quran-radio')}
+              className="p-2.5 rounded-xl bg-slate-50 dark:bg-emerald-900/30 text-xs font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2"
+            >
+              <Radio className="w-4 h-4 text-emerald-600" />
+              <span>إذاعة القرآن الكريم</span>
+            </button>
+            <button
+              onClick={() => handleNavClick('donations')}
+              className="p-2.5 rounded-xl bg-slate-50 dark:bg-emerald-900/30 text-xs font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2"
+            >
+              <HandHeart className="w-4 h-4 text-rose-500" />
+              <span>الصدقة والتبرع</span>
+            </button>
           </div>
         </div>
       )}

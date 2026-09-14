@@ -184,13 +184,71 @@ export const SAUDI_CITIES = POPULAR_CITIES;
 export const SAUDI_REGIONS = Array.from(new Set(POPULAR_CITIES.map((c) => c.regionAr)));
 
 export const CALCULATION_METHODS = [
-  { id: 4, nameAr: 'جامعة أم القرى بمكة المكرمة' },
+  { id: 4, nameAr: 'جامعة أم القرى بمكة المكرمة (الافتراضي)' },
   { id: 5, nameAr: 'الهيئة المصرية العامة للمساحة' },
   { id: 3, nameAr: 'رابطة العالم الإسلامي' },
   { id: 2, nameAr: 'الجمعية الإسلامية لأمريكا الشمالية (ISNA)' },
   { id: 1, nameAr: 'جامعة العلوم الإسلامية بكراتشي' },
+  { id: 8, nameAr: 'منطقة الخليج ودولة الكويت' },
   { id: 13, nameAr: 'رئاسة الشؤون الدينية التركية (ديانت)' }
 ];
+
+export const MADHHAB_OPTIONS = [
+  { id: 0, nameAr: 'الجمهور (الشافعي، المالكي، الحنبلي)' },
+  { id: 1, nameAr: 'المذهب الحنفي' }
+];
+
+export const HIGH_LATITUDE_OPTIONS = [
+  { id: 0, nameAr: 'بدون تعديل (الافتراضي للمناطق المعتدلة)' },
+  { id: 1, nameAr: 'منتصف الليل (Middle of the Night)' },
+  { id: 2, nameAr: 'سُبع الليل (One Seventh)' },
+  { id: 3, nameAr: 'حسب زاوية الشفق (Angle Based)' }
+];
+
+export interface PrayerNotificationSettings {
+  fajr: boolean;
+  sunrise: boolean;
+  dhuhr: boolean;
+  asr: boolean;
+  maghrib: boolean;
+  isha: boolean;
+  soundEnabled: boolean;
+}
+
+const NOTIFICATION_STORAGE_KEY = 'wasl_prayer_notifications_v1';
+
+export function getPrayerNotificationSettings(): PrayerNotificationSettings {
+  try {
+    const raw = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return {
+    fajr: true,
+    sunrise: false,
+    dhuhr: true,
+    asr: true,
+    maghrib: true,
+    isha: true,
+    soundEnabled: true
+  };
+}
+
+export function savePrayerNotificationSettings(settings: PrayerNotificationSettings): void {
+  try {
+    localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(settings));
+  } catch {}
+}
+
+export async function requestNotificationPermission(): Promise<NotificationPermission | 'unsupported'> {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    return 'unsupported';
+  }
+  if (Notification.permission === 'granted') {
+    return 'granted';
+  }
+  return await Notification.requestPermission();
+}
+
 
 const KAABA_LAT = 21.422487;
 const KAABA_LNG = 39.826206;

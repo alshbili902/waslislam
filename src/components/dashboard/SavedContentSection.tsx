@@ -8,7 +8,8 @@ import {
   HelpCircle,
   Trash2,
   ExternalLink,
-  ChevronLeft
+  ChevronLeft,
+  Quote
 } from 'lucide-react';
 import { UserFavorite, QuranBookmark } from '../../types';
 
@@ -27,7 +28,7 @@ export const SavedContentSection: React.FC<SavedContentSectionProps> = ({
   onRemoveBookmark,
   onNavigate,
 }) => {
-  const [activeTab, setActiveTab] = useState<'ayah' | 'hadith' | 'dua' | 'azkar' | 'article'>('ayah');
+  const [activeTab, setActiveTab] = useState<'ayah' | 'hadith' | 'dua' | 'azkar' | 'article' | 'wisdom' | 'allah_name' | 'seerah' | 'hajj_umrah' | 'library_book'>('ayah');
 
   // Filter items by type
   const filteredFavorites = favorites.filter((f) => f.type === activeTab);
@@ -35,6 +36,11 @@ export const SavedContentSection: React.FC<SavedContentSectionProps> = ({
   const tabs = [
     { id: 'ayah', label: `الآيات (${bookmarks.length + favorites.filter(f => f.type === 'ayah').length})`, icon: BookOpen },
     { id: 'hadith', label: `الأحاديث (${favorites.filter(f => f.type === 'hadith').length})`, icon: Sparkles },
+    { id: 'allah_name', label: `أسماء الله (${favorites.filter(f => f.type === 'allah_name').length})`, icon: Sparkles },
+    { id: 'seerah', label: `السيرة (${favorites.filter(f => f.type === 'seerah').length})`, icon: Bookmark },
+    { id: 'hajj_umrah', label: `الحج والعمرة (${favorites.filter(f => f.type === 'hajj_umrah').length})`, icon: Bookmark },
+    { id: 'library_book', label: `المكتبة (${favorites.filter(f => f.type === 'library_book').length})`, icon: BookOpen },
+    { id: 'wisdom', label: `الحِكَم (${favorites.filter(f => f.type === 'wisdom').length})`, icon: Quote },
     { id: 'dua', label: `الأدعية (${favorites.filter(f => f.type === 'dua').length})`, icon: Heart },
     { id: 'azkar', label: `الأذكار (${favorites.filter(f => f.type === 'azkar').length})`, icon: Bookmark },
     { id: 'article', label: `المقالات (${favorites.filter(f => f.type === 'article').length})`, icon: HelpCircle },
@@ -46,6 +52,16 @@ export const SavedContentSection: React.FC<SavedContentSectionProps> = ({
       onNavigate('quran', surahNum);
     } else if (item.type === 'hadith') {
       onNavigate('hadith');
+    } else if (item.type === 'allah_name') {
+      onNavigate('names-of-allah');
+    } else if (item.type === 'seerah') {
+      onNavigate('seerah');
+    } else if (item.type === 'hajj_umrah') {
+      onNavigate('hajj-umrah');
+    } else if (item.type === 'library_book') {
+      onNavigate('library');
+    } else if (item.type === 'wisdom') {
+      onNavigate('wisdoms', item.referenceId);
     } else if (item.type === 'dua') {
       onNavigate('dua');
     } else if (item.type === 'azkar') {
@@ -54,6 +70,7 @@ export const SavedContentSection: React.FC<SavedContentSectionProps> = ({
       onNavigate('fatwa');
     }
   };
+
 
   return (
     <div className="bg-white dark:bg-emerald-950/80 rounded-3xl p-5 sm:p-7 border border-emerald-900/10 dark:border-emerald-800/50 shadow-sm relative overflow-hidden backdrop-blur-md">

@@ -380,4 +380,170 @@ CREATE POLICY "Allow all on radio_stations" ON radio_stations FOR ALL USING (tru
 CREATE POLICY "Users can manage own radio favorites" ON user_radio_favorites FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can manage own radio history" ON user_radio_history FOR ALL USING (auth.uid() = user_id);
 
+-- 16. ISLAMIC WISDOMS & REFLECTIONS (الحِكَم والمواعظ)
+CREATE TABLE IF NOT EXISTS islamic_wisdoms (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  content TEXT NOT NULL,
+  content_type VARCHAR(50) NOT NULL,
+  author VARCHAR(255),
+  source VARCHAR(255) NOT NULL,
+  reference TEXT,
+  hadith_grade VARCHAR(100),
+  category VARCHAR(100) NOT NULL,
+  verification_status VARCHAR(50) NOT NULL DEFAULT 'verified',
+  is_featured BOOLEAN DEFAULT FALSE,
+  is_daily BOOLEAN DEFAULT FALSE,
+  scheduled_date DATE,
+  published_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_wisdoms_category ON islamic_wisdoms(category);
+CREATE INDEX IF NOT EXISTS idx_wisdoms_verification ON islamic_wisdoms(verification_status);
+CREATE INDEX IF NOT EXISTS idx_wisdoms_published_at ON islamic_wisdoms(published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_wisdoms_daily_date ON islamic_wisdoms(scheduled_date);
+CREATE INDEX IF NOT EXISTS idx_wisdoms_featured ON islamic_wisdoms(is_featured);
+
+ALTER TABLE islamic_wisdoms ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public users can view verified wisdoms" ON islamic_wisdoms;
+CREATE POLICY "Public users can view verified wisdoms" ON islamic_wisdoms FOR SELECT USING (verification_status = 'verified');
+
+-- 17. FASTING RECORDS (صيامي)
+CREATE TABLE IF NOT EXISTS fasting_records (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    hijri_year INT NOT NULL,
+    hijri_month INT NOT NULL,
+    hijri_day INT NOT NULL,
+    gregorian_date DATE NOT NULL,
+    fasting_type TEXT NOT NULL DEFAULT 'voluntary',
+    status TEXT NOT NULL DEFAULT 'completed',
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE(user_id, gregorian_date)
+);
+CREATE INDEX IF NOT EXISTS idx_fasting_user_date ON fasting_records(user_id, gregorian_date);
+CREATE INDEX IF NOT EXISTS idx_fasting_user_hijri ON fasting_records(user_id, hijri_year, hijri_month);
+ALTER TABLE fasting_records ENABLE ROW LEVEL SECURITY;
+
+-- 18. NAMES OF ALLAH (أسماء الله الحسنى)
+CREATE TABLE IF NOT EXISTS allah_names (
+    id TEXT PRIMARY KEY,
+    number INT UNIQUE NOT NULL,
+    name_ar TEXT NOT NULL,
+    name_en TEXT,
+    meaning_ar TEXT NOT NULL,
+    explanation_ar TEXT,
+    evidence_ar TEXT,
+    source TEXT NOT NULL,
+    reference TEXT,
+    category TEXT,
+    verification_status TEXT NOT NULL DEFAULT 'verified',
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_allah_names_number ON allah_names(number);
+CREATE INDEX IF NOT EXISTS idx_allah_names_status ON allah_names(verification_status);
+ALTER TABLE allah_names ENABLE ROW LEVEL SECURITY;
+
+-- 19. PROPHETIC BIOGRAPHY (السيرة النبوية ﷺ)
+CREATE TABLE IF NOT EXISTS seerah_events (
+    id TEXT PRIMARY KEY,
+    era TEXT NOT NULL,
+    title TEXT NOT NULL,
+    hijri_year TEXT,
+    gregorian_year TEXT,
+    location TEXT,
+    order_index INT NOT NULL DEFAULT 0,
+    summary TEXT NOT NULL,
+    content TEXT NOT NULL,
+    evidence TEXT,
+    source TEXT NOT NULL,
+    reference TEXT,
+    verification_status TEXT NOT NULL DEFAULT 'verified',
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_seerah_era_order ON seerah_events(era, order_index);
+CREATE INDEX IF NOT EXISTS idx_seerah_status ON seerah_events(verification_status);
+ALTER TABLE seerah_events ENABLE ROW LEVEL SECURITY;
+
+-- 20. HAJJ & UMRAH GUIDE (الحج والعمرة)
+CREATE TABLE IF NOT EXISTS hajj_umrah_sections (
+    id TEXT PRIMARY KEY,
+    type TEXT NOT NULL,
+    title TEXT NOT NULL,
+    step_number INT,
+    description TEXT NOT NULL,
+    evidence TEXT,
+    ruling TEXT,
+    notes TEXT,
+    checklist_item TEXT,
+    coordinates JSONB,
+    source TEXT NOT NULL,
+    reference TEXT,
+    verification_status TEXT NOT NULL DEFAULT 'verified',
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_hajj_umrah_type ON hajj_umrah_sections(type, step_number);
+CREATE INDEX IF NOT EXISTS idx_hajj_umrah_status ON hajj_umrah_sections(verification_status);
+ALTER TABLE hajj_umrah_sections ENABLE ROW LEVEL SECURITY;
+
+-- 21. ISLAMIC LIBRARY (المكتبة الإسلامية)
+CREATE TABLE IF NOT EXISTS library_books (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    author TEXT NOT NULL,
+    category TEXT NOT NULL,
+    cover_url TEXT,
+    description TEXT NOT NULL,
+    publisher TEXT,
+    edition TEXT,
+    license TEXT NOT NULL DEFAULT 'Public Domain (ملك عام)',
+    copyright_status TEXT NOT NULL DEFAULT 'free_to_distribute',
+    chapters JSONB NOT NULL DEFAULT '[]'::jsonb,
+    source TEXT NOT NULL,
+    verification_status TEXT NOT NULL DEFAULT 'verified',
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_library_books_cat ON library_books(category);
+CREATE INDEX IF NOT EXISTS idx_library_books_status ON library_books(verification_status);
+ALTER TABLE library_books ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS library_book_progress (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    book_id TEXT NOT NULL REFERENCES library_books(id) ON DELETE CASCADE,
+    chapter_id TEXT,
+    scroll_position NUMERIC DEFAULT 0,
+    completed BOOLEAN DEFAULT false,
+    last_read_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE(user_id, book_id)
+);
+CREATE INDEX IF NOT EXISTS idx_library_progress_user ON library_book_progress(user_id);
+ALTER TABLE library_book_progress ENABLE ROW LEVEL SECURITY;
+
+-- 22. DISCOVER CURATED FEED (اكتشف)
+CREATE TABLE IF NOT EXISTS discover_items (
+    id TEXT PRIMARY KEY,
+    day_of_year INT,
+    scheduled_date DATE,
+    ayah_data JSONB,
+    hadith_data JSONB,
+    dhikr_data JSONB,
+    dua_data JSONB,
+    wisdom_data JSONB,
+    allah_name_data JSONB,
+    seerah_data JSONB,
+    prophet_story_data JSONB,
+    feature_highlight JSONB,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_discover_day ON discover_items(day_of_year);
+CREATE INDEX IF NOT EXISTS idx_discover_date ON discover_items(scheduled_date);
+ALTER TABLE discover_items ENABLE ROW LEVEL SECURITY;
+
+
+
 

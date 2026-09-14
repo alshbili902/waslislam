@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   BookOpen,
   Heart,
@@ -20,13 +20,20 @@ import {
   Radio,
   Copy,
   HandHeart,
-  Award
+  Award,
+  Quote,
+  MapPin,
+  Library
 } from 'lucide-react';
 import { fetchPrayerTimes, calculateNextPrayer, POPULAR_CITIES, SAUDI_REGIONS } from '../services/prayerService';
 import { PrayerTimesData, NextPrayerInfo } from '../types';
+import { IslamicWisdom } from '../types/wisdom';
+import { wisdomService } from '../services/wisdomService';
 import { HADITH_DATA } from '../data/hadithData';
 import { DUA_DATA } from '../data/duaData';
 import { SURAHS_LIST } from '../data/quranMetadata';
+import { ALLAH_NAMES_DATA } from '../data/allahNamesData';
+import { getDailyDiscoverFeed } from '../services/discoverService';
 import { useAudio } from '../context/AudioContext';
 import { useRadio } from '../context/RadioContext';
 import { useUser } from '../context/UserContext';
@@ -55,6 +62,8 @@ export const HomeView: React.FC<Props> = ({ onNavigate }) => {
   const [selectedCity, setSelectedCity] = useState(POPULAR_CITIES[0]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { openShareModal } = useShareModal();
+  const [dailyWisdom, setDailyWisdom] = useState<IslamicWisdom | null>(null);
+  const dailyFeed = useMemo(() => getDailyDiscoverFeed(new Date()), []);
 
   // Daily Ayah: Ayat Al-Kursi (Al-Baqarah 255)
   const dailyAyah = {
@@ -67,6 +76,10 @@ export const HomeView: React.FC<Props> = ({ onNavigate }) => {
 
   // Daily Hadith
   const dailyHadith = HADITH_DATA[0];
+
+  useEffect(() => {
+    wisdomService.getDailyWisdom().then((w) => setDailyWisdom(w));
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -310,6 +323,110 @@ export const HomeView: React.FC<Props> = ({ onNavigate }) => {
         </div>
       </section>
 
+      {/* Selected Platform Highlights (اسم الله اليوم، اكتشف نفحات اليوم، صيامي، المكتبة) */}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Highlight 1: اسم الله اليوم */}
+        <div className="bg-white dark:bg-emerald-950/80 rounded-2xl p-5 border border-emerald-900/10 dark:border-emerald-800/50 shadow-xs flex flex-col justify-between group hover:border-emerald-500/50 transition-all">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800">
+                اسم الله اليوم
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">#{dailyFeed.allahName.number}</span>
+            </div>
+            <h3 className="text-2xl font-bold font-amiri text-emerald-900 dark:text-amber-300 group-hover:scale-105 transition-transform origin-right">
+              {dailyFeed.allahName.nameAr}
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">
+              {dailyFeed.allahName.meaningAr}
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate('names-of-allah')}
+            className="mt-3 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline flex items-center gap-1 self-start"
+          >
+            <span>استكشف 99 اسماً</span>
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Highlight 2: اكتشف نفحات اليوم */}
+        <div className="bg-white dark:bg-emerald-950/80 rounded-2xl p-5 border border-emerald-900/10 dark:border-emerald-800/50 shadow-xs flex flex-col justify-between group hover:border-emerald-500/50 transition-all">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800">
+                نفحات اليوم
+              </span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              اكتشف مختارات اليوم
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">
+              آية اليوم، حديث نبوي، أذكار مأثورة، ومقتطف من السيرة النبوية يتجدد كل فجر.
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate('discover')}
+            className="mt-3 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline flex items-center gap-1 self-start"
+          >
+            <span>عرض مختارات اليوم</span>
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Highlight 3: سجل صيامي */}
+        <div className="bg-white dark:bg-emerald-950/80 rounded-2xl p-5 border border-emerald-900/10 dark:border-emerald-800/50 shadow-xs flex flex-col justify-between group hover:border-emerald-500/50 transition-all">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800">
+                صيامي
+              </span>
+              <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              سجل الصيام والتقويم
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">
+              تابع صيام الفريضة والقضاء والنوافل وأيام البيض بخصوصية واحتسب الأجر.
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate('fasting')}
+            className="mt-3 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline flex items-center gap-1 self-start"
+          >
+            <span>فتح سجل الصيام</span>
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Highlight 4: المكتبة الإسلامية */}
+        <div className="bg-white dark:bg-emerald-950/80 rounded-2xl p-5 border border-emerald-900/10 dark:border-emerald-800/50 shadow-xs flex flex-col justify-between group hover:border-emerald-500/50 transition-all">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800">
+                المكتبة
+              </span>
+              <Library className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              المكتبة الإسلامية الجامعة
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">
+              قراءة مريحة لأمهات الكتب في التفسير والحديث والفقه والعقيدة والسيرة.
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate('library')}
+            className="mt-3 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline flex items-center gap-1 self-start"
+          >
+            <span>تصفح الكتب</span>
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </section>
+
+
       {/* Quran Radio Live Banner Section */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-900 via-emerald-950 to-teal-950 text-white p-5 sm:p-7 shadow-lg border border-emerald-700/50">
         <div className="flex flex-col md:flex-row items-center justify-between gap-5 relative z-10">
@@ -531,6 +648,69 @@ export const HomeView: React.FC<Props> = ({ onNavigate }) => {
         </div>
       </div>
 
+      {/* Featured Daily Wisdom Section */}
+      {dailyWisdom && (
+        <section className="bg-gradient-to-l from-emerald-950/90 via-emerald-900/60 to-emerald-950/90 rounded-2xl p-5 sm:p-6 border border-amber-500/25 shadow-sm text-right text-white">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-amber-400/20 text-amber-300">
+                <Quote className="w-4 h-4" />
+              </div>
+              <h3 className="font-bold text-sm sm:text-base text-white">
+                حِكْمَةُ اليَوْم
+              </h3>
+            </div>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-800 text-emerald-200 font-bold border border-emerald-700">
+              {dailyWisdom.category}
+            </span>
+          </div>
+
+          <p className="font-amiri text-base sm:text-lg leading-relaxed text-amber-50 my-2 select-text">
+            {dailyWisdom.content}
+          </p>
+
+          {dailyWisdom.author && (
+            <p className="text-xs text-emerald-300 font-bold mb-1">
+              — {dailyWisdom.author}
+            </p>
+          )}
+
+          <div className="flex items-center justify-between pt-3 border-t border-white/10 text-xs mt-2">
+            <span className="text-slate-300 text-[11px] truncate max-w-[60%]">
+              المصدر: {dailyWisdom.source} {dailyWisdom.reference ? `(${dailyWisdom.reference})` : ''}
+            </span>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() =>
+                  openShareModal({
+                    type: 'wisdom',
+                    sectionName: 'الحِكَم والمواعظ',
+                    contentType: 'حكمة',
+                    content: dailyWisdom.content,
+                    text: dailyWisdom.content,
+                    source: dailyWisdom.author ? `${dailyWisdom.author} — ${dailyWisdom.source}` : dailyWisdom.source,
+                    title: `حكمة اليوم في ${dailyWisdom.category}`
+                  })
+                }
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 transition-colors font-bold text-xs cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>مشاركة</span>
+              </button>
+
+              <button
+                onClick={() => onNavigate('wisdoms')}
+                className="inline-flex items-center gap-1 text-emerald-300 hover:text-white font-bold text-xs"
+              >
+                <span>المزيد</span>
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Quick Navigation Modules Grid */}
       <section>
         <div className="flex items-center justify-between mb-4">
@@ -543,9 +723,10 @@ export const HomeView: React.FC<Props> = ({ onNavigate }) => {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
           {[
             { id: 'quran', title: 'القرآن الكريم', desc: 'تلاوة، تفسير، واستماع', icon: BookOpen, color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/40' },
+            { id: 'wisdoms', title: 'الحِكَم والمواعظ', desc: 'كلمات نافعة وتذكير إيماني', icon: Quote, color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/30' },
             { id: 'quran-radio', title: 'إذاعة القرآن', desc: 'بث مباشر متواصل 24 ساعة', icon: Radio, color: 'text-teal-600 bg-teal-50 dark:bg-teal-900/40' },
             { id: 'azkar', title: 'حصن المسلم', desc: 'أذكار الصباح والمساء', icon: Heart, color: 'text-rose-600 bg-rose-50 dark:bg-rose-900/30' },
             { id: 'hadith', title: 'السنة المطهرة', desc: 'أحاديث نبوية موثقة', icon: Sparkles, color: 'text-amber-600 bg-amber-50 dark:bg-amber-900/30' },

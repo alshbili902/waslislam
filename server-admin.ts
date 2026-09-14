@@ -1,6 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
+import { VERIFIED_INITIAL_WISDOMS } from './src/data/wisdomsData';
+import { IslamicWisdom, ALL_WISDOM_CATEGORIES } from './src/types/wisdom';
 
 dotenv.config();
 
@@ -1216,5 +1218,294 @@ adminRouter.delete('/wird/:id', (req: Request, res: Response) => {
 
   res.json({ ok: true, id });
 });
+
+// ==========================================
+// 13. Islamic Wisdoms & Reflections (الحِكَم والمواعظ)
+// ==========================================
+
+let adminWisdoms: IslamicWisdom[] = [...VERIFIED_INITIAL_WISDOMS];
+
+function normalizeArabic(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    .replace(/\u0640/g, '')
+    .replace(/[أإآٱ]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .replace(/ة/g, 'ه')
+    .replace(/[.,/#!$%^&*;:{}=\-_`~()«»""'؟،؛!?:–—]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function detectDuplicate(candidate: string, excludeId?: string): { isDuplicate: boolean; match?: IslamicWisdom; score: number } {
+  const normCandidate = normalizeArabic(candidate);
+  if (!normCandidate || normCandidate.length < 5) return { isDuplicate: false, score: 0 };
+  const wordsCandidate = new Set(normCandidate.split(' ').filter(w => w.length > 1));
+
+  for (const item of adminWisdoms) {
+    if (excludeId && item.id === excludeId) continue;
+    const normExisting = normalizeArabic(item.content);
+
+    if (normCandidate === normExisting) {
+      return { isDuplicate: true, match: item, score: 100 };
+    }
+
+    if (normCandidate.length >= 15 && normExisting.length >= 15) {
+      if (normCandidate.includes(normExisting) || normExisting.includes(normCandidate)) {
+        return { isDuplicate: true, match: item, score: 90 };
+      }
+    }
+
+    const wordsExisting = new Set(normExisting.split(' ').filter(w => w.length > 1));
+    let intersection = 0;
+    wordsCandidate.forEach((w) => {
+      if (wordsExisting.has(w)) intersection++;
+    });
+    const union = new Set([...wordsCandidate, ...wordsExisting]).size;
+    const jaccard = union > 0 ? Math.round((intersection / union) * 100) : 0;
+    const containment = wordsCandidate.size > 0 ? Math.round((intersection / wordsCandidate.size) * 100) : 0;
+
+    if (jaccard >= 60 || (containment >= 80 && wordsCandidate.size >= 3)) {
+      const best = Math.max(jaccard, containment);
+      return { isDuplicate: true, match: item, score: best };
+    }
+  }
+
+  return { isDuplicate: false, score: 0 };
+}
+
+function hashDate(dateStr: string): number {
+  let hash = 0;
+  for (let i = 0; i < dateStr.length; i++) {
+    hash = (hash << 5) - hash + dateStr.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+// Public API Handlers
+export function getPublicWisdoms(req: Request, res: Response) {
+  const { category, search, page = '1', limit = '12', contentType } = req.query;
+  const verified = adminWisdoms.filter((w) => w.verificationStatus === 'verified');
+  let results = verified;
+
+  if (category && category !== 'الكل') {
+    results = results.filter((w) => w.category === category);
+  }
+
+  if (contentType && contentType !== 'all') {
+    results = results.filter((w) => w.contentType === contentType);
+  }
+
+  if (search && typeof search === 'string' && search.trim()) {
+    const q = normalizeArabic(search);
+    results = results.filter(
+      (w) =>
+        normalizeArabic(w.content).includes(q) ||
+        normalizeArabic(w.source).includes(q) ||
+        (w.author && normalizeArabic(w.author).includes(q)) ||
+        normalizeArabic(w.category).includes(q)
+    );
+  }
+
+  const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+  const pageSize = Math.max(1, Math.min(100, parseInt(limit as string, 10) || 12));
+  const total = results.length;
+  const start = (pageNum - 1) * pageSize;
+  const items = results.slice(start, start + pageSize);
+
+  res.json({
+    items,
+    total,
+    page: pageNum,
+    pageSize,
+    totalPages: Math.ceil(total / pageSize),
+  });
+}
+
+export function getPublicDailyWisdom(req: Request, res: Response) {
+  const dateStr = (req.query.date as string) || new Date().toISOString().split('T')[0];
+  const verified = adminWisdoms.filter((w) => w.verificationStatus === 'verified');
+
+  // Check if admin scheduled for this date
+  const scheduled = verified.find((w) => w.scheduledDate === dateStr || (w.isDaily && w.scheduledDate === dateStr));
+  if (scheduled) {
+    return res.json({ wisdom: scheduled, source: 'admin_scheduled', date: dateStr });
+  }
+
+  // Deterministic daily selection based on date string hash
+  if (verified.length === 0) {
+    return res.status(404).json({ error: 'لا توجد حكم موثقة متاحة حالياً' });
+  }
+
+  const idx = hashDate(dateStr) % verified.length;
+  return res.json({ wisdom: verified[idx], source: 'deterministic_verified', date: dateStr });
+}
+
+export function getPublicWisdomById(req: Request, res: Response) {
+  const { id } = req.params;
+  const item = adminWisdoms.find((w) => w.id === id && w.verificationStatus === 'verified');
+  if (!item) {
+    return res.status(404).json({ error: 'المحتوى غير موجود أو غير معتمد للنشر' });
+  }
+  return res.json({ wisdom: item });
+}
+
+export function getPublicWisdomCategories(req: Request, res: Response) {
+  res.json({ categories: ALL_WISDOM_CATEGORIES });
+}
+
+// Protected Admin Wisdom Routes
+adminRouter.get('/wisdoms', (req: Request, res: Response) => {
+  const { category, search, verificationStatus, contentType, page = '1', limit = '50' } = req.query;
+  let list = adminWisdoms;
+
+  if (verificationStatus && verificationStatus !== 'all') {
+    list = list.filter((w) => w.verificationStatus === verificationStatus);
+  }
+
+  if (category && category !== 'الكل') {
+    list = list.filter((w) => w.category === category);
+  }
+
+  if (contentType && contentType !== 'all') {
+    list = list.filter((w) => w.contentType === contentType);
+  }
+
+  if (search && typeof search === 'string' && search.trim()) {
+    const q = normalizeArabic(search);
+    list = list.filter(
+      (w) =>
+        normalizeArabic(w.content).includes(q) ||
+        normalizeArabic(w.source).includes(q) ||
+        (w.author && normalizeArabic(w.author).includes(q))
+    );
+  }
+
+  const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+  const pageSize = Math.max(1, Math.min(200, parseInt(limit as string, 10) || 50));
+  const total = list.length;
+  const start = (pageNum - 1) * pageSize;
+  const items = list.slice(start, start + pageSize);
+
+  res.json({ items, total, page: pageNum, pageSize });
+});
+
+adminRouter.post('/wisdoms/check-duplicate', (req: Request, res: Response) => {
+  const { content, excludeId } = req.body || {};
+  if (!content) {
+    return res.json({ isDuplicate: false, score: 0 });
+  }
+  const result = detectDuplicate(content, excludeId);
+  res.json(result);
+});
+
+adminRouter.post('/wisdoms', (req: Request, res: Response) => {
+  const { content, contentType, author, source, reference, hadithGrade, category, verificationStatus, isFeatured, isDaily, scheduledDate } = req.body || {};
+
+  if (!content || typeof content !== 'string' || content.trim().length < 5) {
+    return res.status(400).json({ error: 'نص الحكمة أو الموعظة مطلوب ويجب أن يكون ذا معنى' });
+  }
+
+  if (!source || typeof source !== 'string' || source.trim().length === 0) {
+    return res.status(400).json({ error: 'المصدر المعتمد مطلوب لمنع فبركة المحتوى الديني' });
+  }
+
+  if (!category || typeof category !== 'string') {
+    return res.status(400).json({ error: 'التصنيف مطلوب' });
+  }
+
+  const dup = detectDuplicate(content);
+  const now = new Date().toISOString();
+
+  const newWisdom: IslamicWisdom = {
+    id: 'wis-' + Date.now(),
+    content: sanitizeInput(content),
+    contentType: contentType || 'wisdom',
+    author: author ? sanitizeInput(author) : undefined,
+    source: sanitizeInput(source),
+    reference: reference ? sanitizeInput(reference) : undefined,
+    hadithGrade: hadithGrade ? sanitizeInput(hadithGrade) : undefined,
+    category: category as any,
+    verificationStatus: verificationStatus || 'verified',
+    isFeatured: Boolean(isFeatured),
+    isDaily: Boolean(isDaily),
+    scheduledDate: scheduledDate ? sanitizeInput(scheduledDate) : undefined,
+    publishedAt: verificationStatus === 'verified' ? now : undefined,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  adminWisdoms.unshift(newWisdom);
+  logAuditEvent('Create Wisdom', 'Wisdom', newWisdom.id, 'success', `إضافة حكمة/موعظة جديدة: ${newWisdom.content.substring(0, 40)}...`, req.ip);
+
+  return res.status(201).json({
+    ok: true,
+    wisdom: newWisdom,
+    duplicateWarning: dup.isDuplicate
+      ? `يوجد محتوى مشابه أو مطابق بالفعل (نسبة التشابه: ${dup.score}%) مع الحكمة: "${dup.match?.content.substring(0, 40)}..."`
+      : undefined,
+  });
+});
+
+adminRouter.put('/wisdoms/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const index = adminWisdoms.findIndex((w) => w.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ error: 'الحكمة غير موجودة' });
+  }
+
+  const { content, contentType, author, source, reference, hadithGrade, category, verificationStatus, isFeatured, isDaily, scheduledDate } = req.body || {};
+
+  let duplicateWarning: string | undefined;
+  if (content && content !== adminWisdoms[index].content) {
+    const dup = detectDuplicate(content, id);
+    if (dup.isDuplicate) {
+      duplicateWarning = `يوجد محتوى مشابه أو مطابق بالفعل (نسبة التشابه: ${dup.score}%)`;
+    }
+  }
+
+  const current = adminWisdoms[index];
+  const now = new Date().toISOString();
+
+  const updated: IslamicWisdom = {
+    ...current,
+    content: content !== undefined ? sanitizeInput(content) : current.content,
+    contentType: contentType !== undefined ? contentType : current.contentType,
+    author: author !== undefined ? sanitizeInput(author) : current.author,
+    source: source !== undefined ? sanitizeInput(source) : current.source,
+    reference: reference !== undefined ? sanitizeInput(reference) : current.reference,
+    hadithGrade: hadithGrade !== undefined ? sanitizeInput(hadithGrade) : current.hadithGrade,
+    category: category !== undefined ? category : current.category,
+    verificationStatus: verificationStatus !== undefined ? verificationStatus : current.verificationStatus,
+    isFeatured: isFeatured !== undefined ? Boolean(isFeatured) : current.isFeatured,
+    isDaily: isDaily !== undefined ? Boolean(isDaily) : current.isDaily,
+    scheduledDate: scheduledDate !== undefined ? sanitizeInput(scheduledDate) : current.scheduledDate,
+    updatedAt: now,
+  };
+
+  adminWisdoms[index] = updated;
+  logAuditEvent('Update Wisdom', 'Wisdom', id, 'success', `تعديل حكمة: ${updated.id}`, req.ip);
+
+  return res.json({ ok: true, wisdom: updated, duplicateWarning });
+});
+
+adminRouter.delete('/wisdoms/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const index = adminWisdoms.findIndex((w) => w.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ error: 'الحكمة غير موجودة' });
+  }
+
+  const deleted = adminWisdoms.splice(index, 1)[0];
+  logAuditEvent('Delete Wisdom', 'Wisdom', id, 'warning', `حذف حكمة: ${deleted.id}`, req.ip);
+
+  return res.json({ ok: true, id });
+});
+
 
 

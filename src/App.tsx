@@ -27,14 +27,22 @@ import { TasbihView } from './views/TasbihView';
 import { FatwaArticlesView } from './views/FatwaArticlesView';
 import { DonationsView } from './views/DonationsView';
 import { BinBazView } from './views/BinBazView';
+import { WisdomsView } from './views/WisdomsView';
 import { DailyWirdView } from './views/DailyWirdView';
 import { UserDashboardView } from './views/UserDashboardView';
 import { LoginView } from './views/LoginView';
 import { AdminView } from './views/AdminView';
 import { AdminLoginView } from './views/admin/AdminLoginView';
+import { FastingView } from './views/FastingView';
+import { NamesOfAllahView } from './views/NamesOfAllahView';
+import { SeerahView } from './views/SeerahView';
+import { HajjUmrahView } from './views/HajjUmrahView';
+import { LibraryView } from './views/LibraryView';
+import { GlobalSearchView } from './views/GlobalSearchView';
+import { DiscoverView } from './views/DiscoverView';
 
 function AppContent() {
-  const { isAuthenticated, isLoadingAuth } = useUser();
+  const { isAuthenticated, isLoadingAuth, user } = useUser();
   const { isAdminAuthenticated, isLoadingAdminAuth } = useAdmin();
 
   const [currentTab, setCurrentTab] = useState<string>(() => {
@@ -46,12 +54,20 @@ function AppContent() {
       if (path === 'login') return 'login';
       if (path === 'register') return 'register';
       if (path === 'wird') return 'wird';
+      if (path === 'wisdoms' || path.startsWith('wisdoms/')) return 'wisdoms';
       if (path === 'quran-radio') return 'quran-radio';
       if (path === 'quran') return 'quran';
       if (path === 'azkar') return 'azkar';
       if (path === 'hadith') return 'hadith';
       if (path === 'dua') return 'dua';
-      if (path === 'prayer') return 'prayer';
+      if (path === 'prayer' || path === 'prayer-times') return 'prayer-times';
+      if (path === 'fasting') return 'fasting';
+      if (path === 'names-of-allah') return 'names-of-allah';
+      if (path === 'seerah') return 'seerah';
+      if (path === 'hajj-umrah') return 'hajj-umrah';
+      if (path === 'library') return 'library';
+      if (path === 'search') return 'search';
+      if (path === 'discover') return 'discover';
       if (path === 'calendar') return 'calendar';
       if (path === 'tasbih') return 'tasbih';
       if (path === 'fatwa') return 'fatwa';
@@ -137,7 +153,8 @@ function AppContent() {
 
   useEffect(() => {
     const handlePopState = () => {
-      const path = window.location.pathname.replace(/^\/+/, '') || 'home';
+      const raw = window.location.pathname.replace(/^\/+/, '') || 'home';
+      const path = raw.split('/')[0] || 'home';
       setCurrentTab(path);
     };
     window.addEventListener('popstate', handlePopState);
@@ -199,6 +216,8 @@ function AppContent() {
         return <LoginView onNavigate={handleNavigate} initialMode="signup" />;
       case 'wird':
         return <DailyWirdView onNavigate={handleNavigate} />;
+      case 'wisdoms':
+        return <WisdomsView onNavigate={handleNavigate} />;
       case 'quran-radio':
         return <QuranRadioView onNavigate={handleNavigate} />;
       case 'quran':
@@ -210,7 +229,22 @@ function AppContent() {
       case 'dua':
         return <DuaView />;
       case 'prayer':
+      case 'prayer-times':
         return <PrayerQiblaView />;
+      case 'fasting':
+        return <FastingView userId={user?.id} />;
+      case 'names-of-allah':
+        return <NamesOfAllahView />;
+      case 'seerah':
+        return <SeerahView />;
+      case 'hajj-umrah':
+        return <HajjUmrahView />;
+      case 'library':
+        return <LibraryView />;
+      case 'search':
+        return <GlobalSearchView onSelectTab={handleNavigate} />;
+      case 'discover':
+        return <DiscoverView onSelectTab={handleNavigate} />;
       case 'calendar':
         return <CalendarView />;
       case 'tasbih':

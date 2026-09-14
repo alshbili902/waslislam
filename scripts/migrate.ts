@@ -19,13 +19,23 @@ async function runMigration() {
     await client.connect();
     console.log('Connected to PostgreSQL successfully!');
 
-    // Read schema.sql
-    const schemaPath = path.join(process.cwd(), 'supabase', 'schema.sql');
-    const sql = fs.readFileSync(schemaPath, 'utf-8');
-
-    console.log('Executing supabase/schema.sql...');
-    await client.query(sql);
-    console.log('Schema executed successfully!');
+    // Execute individual numbered migrations in sequence
+    const migrationsDir = path.join(process.cwd(), 'supabase', 'migrations');
+    if (fs.existsSync(migrationsDir)) {
+      const files = fs.readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
+      console.log(`Found ${files.length} migration files.`);
+      for (const file of files) {
+        console.log(`Running migration: ${file}...`);
+        const filePath = path.join(migrationsDir, file);
+        const migrationSql = fs.readFileSync(filePath, 'utf-8');
+        try {
+          await client.query(migrationSql);
+          console.log(`✓ ${file} applied successfully.`);
+        } catch (mErr: any) {
+          console.log(`- ${file}: ${mErr.message} (ignoring if already exists)`);
+        }
+      }
+    }
 
     // Check existing tables
     const res = await client.query(`
@@ -35,7 +45,7 @@ async function runMigration() {
       ORDER BY table_name;
     `);
 
-    console.log('\nCreated tables in public schema:');
+    console.log('\nExisting tables in public schema:');
     res.rows.forEach(r => console.log(' - ' + r.table_name));
 
   } catch (err: any) {

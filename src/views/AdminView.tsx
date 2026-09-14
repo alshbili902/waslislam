@@ -31,13 +31,16 @@ import {
   HandHeart,
   Award,
   Lock,
-  Building2
+  Building2,
+  Quote
 } from 'lucide-react';
 import { BrandLogo } from '../components/brand/BrandLogo';
 import { useAdmin } from '../context/AdminContext';
 import { useShareModal } from '../context/ShareContext';
 import { AdminRadioManager } from '../components/AdminRadioManager';
 import { AdminWirdManager } from '../components/admin/AdminWirdManager';
+import { AdminWisdomsManager } from '../components/admin/AdminWisdomsManager';
+import { AdminPlatformUpgradesManager } from '../components/admin/AdminPlatformUpgradesManager';
 import { AdminContentItem, AdminSectionItem, AuditLogEntry } from '../types/admin';
 import { DonationPlatform } from '../types/donations';
 import { BinBazLinkItem } from '../types/binbaz';
@@ -49,7 +52,7 @@ interface AdminViewProps {
   onNavigate: (tab: string, contextId?: any) => void;
 }
 
-type AdminTab = 'overview' | 'wird' | 'content' | 'sections' | 'share-cards' | 'radio' | 'donations' | 'binbaz' | 'users' | 'audit';
+type AdminTab = 'overview' | 'wird' | 'wisdoms' | 'upgrades' | 'content' | 'sections' | 'share-cards' | 'radio' | 'donations' | 'binbaz' | 'users' | 'audit';
 
 export const AdminView: React.FC<AdminViewProps> = ({ onNavigate }) => {
   const { adminUsername, logoutAdmin, isAdminAuthenticated, isLoadingAdminAuth } = useAdmin();
@@ -582,6 +585,8 @@ export const AdminView: React.FC<AdminViewProps> = ({ onNavigate }) => {
   const navTabs = [
     { id: 'overview', label: 'لوحة المؤشرات', icon: LayoutDashboard },
     { id: 'wird', label: 'إدارة ورد اليوم', icon: Sparkles },
+    { id: 'wisdoms', label: 'إدارة الحِكَم والمواعظ', icon: Quote },
+    { id: 'upgrades', label: 'الميزات والتحقق الشرعي', icon: ShieldCheck },
     { id: 'content', label: 'المحتوى الإسلامي', icon: BookOpen, badge: contentList.length },
     { id: 'sections', label: 'إدارة الأقسام', icon: FolderTree, badge: sectionsList.length },
     { id: 'donations', label: 'الصدقة والتبرع', icon: HandHeart, badge: donationsList.length },
@@ -993,6 +998,12 @@ export const AdminView: React.FC<AdminViewProps> = ({ onNavigate }) => {
 
           {/* TAB: DAILY WIRD MANAGER */}
           {activeTab === 'wird' && <AdminWirdManager />}
+
+          {/* TAB: ISLAMIC WISDOMS MANAGER */}
+          {activeTab === 'wisdoms' && <AdminWisdomsManager />}
+
+          {/* TAB: PLATFORM UPGRADES & SHARIA VERIFICATION */}
+          {activeTab === 'upgrades' && <AdminPlatformUpgradesManager />}
 
           {/* TAB 2: ISLAMIC CONTENT MANAGEMENT */}
           {activeTab === 'content' && (

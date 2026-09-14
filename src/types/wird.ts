@@ -2,7 +2,7 @@
  * Types and interfaces for the "Daily Wird" (ورد اليوم) feature.
  */
 
-export type WirdItemType = 'quran' | 'dhikr' | 'hadith' | 'dua' | 'tasbih';
+export type WirdItemType = 'quran' | 'dhikr' | 'hadith' | 'dua' | 'tasbih' | 'wisdom';
 
 export interface QuranWirdData {
   surahNumber: number;
@@ -51,6 +51,16 @@ export interface TasbihWirdData {
   virtueAr?: string;
 }
 
+export interface WisdomWirdData {
+  wisdomId: string;
+  contentType: string; // e.g. "حكمة", "موعظة", "تذكير", "فائدة إيمانية"
+  content: string;
+  author?: string;
+  source: string;
+  reference?: string;
+  category: string;
+}
+
 export interface DailyWirdItem {
   id: string;
   type: WirdItemType;
@@ -66,6 +76,7 @@ export interface DailyWirdItem {
   hadithData?: HadithWirdData;
   duaData?: DuaWirdData;
   tasbihData?: TasbihWirdData;
+  wisdomData?: WisdomWirdData;
 }
 
 export interface DailyWird {

@@ -16,6 +16,7 @@ import {
   getPublicWisdomCategories
 } from './server-admin';
 import { userAuthRouter } from './server-user-auth';
+import { channelsRouter } from './server-channels';
 
 async function startServer() {
   const app = express();
@@ -48,6 +49,9 @@ async function startServer() {
 
   // Dedicated Admin API Router
   app.use('/api/admin', adminRouter);
+
+  // Dedicated Islamic Channels & Live Streaming API Router
+  app.use('/api/channels', channelsRouter);
 
   // API Health check
   app.get('/api/health', (req, res) => {

@@ -126,6 +126,24 @@ export default defineConfig(() => {
                 },
               },
             },
+            {
+              // Do not cache live video streams in service worker (direct to source)
+              urlPattern: /^https?:\/\/.*\.(m3u8|ts|m3u|key|mp4|aac)($|\?)/i,
+              handler: 'NetworkOnly',
+            },
+            {
+              // Cache channel metadata safely
+              urlPattern: /\/api\/channels/i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'channels-api-cache',
+                networkTimeoutSeconds: 3,
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 60 * 60,
+                },
+              },
+            },
           ],
         },
         devOptions: {

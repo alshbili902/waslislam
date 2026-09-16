@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Compass,
   Sparkles,
@@ -16,11 +16,16 @@ import {
   ArrowRight,
   ShieldCheck,
   Flame,
-  Clock
+  Clock,
+  Tv,
+  Play,
+  Radio
 } from 'lucide-react';
 import { getDailyDiscoverFeed } from '../services/discoverService';
 import { useUser } from '../context/UserContext';
 import { useShareModal } from '../context/ShareContext';
+import { IslamicChannel } from '../types/channel';
+import { channelService } from '../services/channelService';
 
 interface DiscoverViewProps {
   onSelectTab: (tab: string, id?: any) => void;
@@ -29,6 +34,30 @@ interface DiscoverViewProps {
 export const DiscoverView: React.FC<DiscoverViewProps> = ({ onSelectTab }) => {
   const { user, isAuthenticated, lastReading, isFavorite, toggleFavorite } = useUser();
   const { openShareModal } = useShareModal();
+
+  // Channels state
+  const [channels, setChannels] = useState<IslamicChannel[]>([]);
+  const [activeChannelTab, setActiveChannelTab] = useState<'featured' | 'quran' | 'sunnah' | 'recent'>('featured');
+  const [isLoadingChannels, setIsLoadingChannels] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    channelService.getChannels().then(data => {
+      if (isMounted) {
+        setChannels(data.filter(ch => ch.isActive));
+        setIsLoadingChannels(false);
+      }
+    }).catch(err => {
+      console.warn('Failed to load channels in discover:', err);
+      if (isMounted) setIsLoadingChannels(false);
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  const featuredChannels = useMemo(() => channels.filter(c => c.isFeatured), [channels]);
+  const quranChannels = useMemo(() => channels.filter(c => c.categorySlug === 'quran' || c.categoryName?.includes('قرآن') || c.name.includes('قرآن') || c.name.includes('مصحف')), [channels]);
+  const sunnahChannels = useMemo(() => channels.filter(c => c.categorySlug === 'sunnah' || c.categorySlug === 'lectures' || c.categoryName?.includes('سنة') || c.name.includes('سنة') || c.name.includes('دروس')), [channels]);
+  const recentChannels = useMemo(() => [...channels].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()).slice(0, 6), [channels]);
 
   // Deterministic daily feed based on current date
   const feed = useMemo(() => getDailyDiscoverFeed(new Date()), []);
@@ -440,6 +469,160 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({ onSelectTab }) => {
               </button>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* Islamic Channels Discovery Section */}
+      <div className="bg-white dark:bg-emerald-950/80 rounded-3xl p-6 sm:p-8 border border-emerald-900/10 dark:border-emerald-800/50 shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="p-2.5 rounded-2xl bg-amber-500/10 dark:bg-amber-400/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              <Tv className="w-6 h-6" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                  بث مباشر 24/7
+                </span>
+                <span className="text-xs text-slate-400">بث عالي الدقة HLS</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black font-amiri text-slate-900 dark:text-white mt-1">
+                القنوات الإسلامية والبث المباشر
+              </h2>
+            </div>
+          </div>
+
+          <button
+            onClick={() => onSelectTab('channels')}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 font-bold text-xs transition-colors self-start sm:self-center"
+          >
+            <span>عرض جميع القنوات</span>
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Tab Filters */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none border-b border-slate-100 dark:border-emerald-900/40">
+          <button
+            onClick={() => setActiveChannelTab('featured')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
+              activeChannelTab === 'featured'
+                ? 'bg-emerald-800 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-emerald-900/30'
+            }`}
+          >
+            ⭐ قنوات مميزة ({featuredChannels.length})
+          </button>
+          <button
+            onClick={() => setActiveChannelTab('quran')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
+              activeChannelTab === 'quran'
+                ? 'bg-emerald-800 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-emerald-900/30'
+            }`}
+          >
+            📖 قنوات القرآن ({quranChannels.length})
+          </button>
+          <button
+            onClick={() => setActiveChannelTab('sunnah')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
+              activeChannelTab === 'sunnah'
+                ? 'bg-emerald-800 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-emerald-900/30'
+            }`}
+          >
+            🕌 السنة النبوية والدروس ({sunnahChannels.length})
+          </button>
+          <button
+            onClick={() => setActiveChannelTab('recent')}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
+              activeChannelTab === 'recent'
+                ? 'bg-emerald-800 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-emerald-900/30'
+            }`}
+          >
+            ✨ مضاف حديثاً ({recentChannels.length})
+          </button>
+        </div>
+
+        {/* Channels Grid / Content */}
+        {isLoadingChannels ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-28 rounded-2xl bg-slate-100 dark:bg-emerald-900/30 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          (() => {
+            const currentList =
+              activeChannelTab === 'featured' ? (featuredChannels.length > 0 ? featuredChannels : channels) :
+              activeChannelTab === 'quran' ? quranChannels :
+              activeChannelTab === 'sunnah' ? sunnahChannels :
+              recentChannels;
+
+            if (currentList.length === 0) {
+              return (
+                <div className="text-center py-10 bg-slate-50 dark:bg-emerald-900/20 rounded-2xl border border-dashed border-slate-200 dark:border-emerald-800">
+                  <Tv className="w-10 h-10 mx-auto text-slate-400 mb-2" />
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                    لا توجد قنوات في هذا القسم حالياً
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    يمكن للمشرف إضافة قنوات جديدة من لوحة التحكم
+                  </p>
+                </div>
+              );
+            }
+
+            return (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {currentList.map(channel => (
+                  <div
+                    key={channel.id}
+                    onClick={() => onSelectTab('channels', channel.slug)}
+                    className="group flex items-center justify-between p-4 rounded-2xl bg-slate-50/80 dark:bg-emerald-900/30 border border-slate-100 dark:border-emerald-800/40 hover:border-emerald-500/50 dark:hover:border-emerald-500/50 hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-12 rounded-xl bg-white dark:bg-emerald-950 border border-slate-200 dark:border-emerald-800 flex items-center justify-center overflow-hidden flex-shrink-0 relative shadow-xs">
+                        {channel.logoUrl ? (
+                          <img
+                            src={channel.logoUrl}
+                            alt={channel.name}
+                            className="w-full h-full object-contain p-1"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <Tv className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        )}
+                        <span className="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-rose-500 border border-white dark:border-slate-900" />
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-700 dark:group-hover:text-amber-300 transition-colors">
+                            {channel.name}
+                          </h4>
+                          {channel.isFeatured && (
+                            <span className="text-[10px] text-amber-500 flex-shrink-0" title="قناة مميزة">★</span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                          {channel.categoryName || 'قناة إسلامية'} {channel.country ? `• ${channel.country}` : ''}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-800/60 text-emerald-800 dark:text-emerald-200 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-700 group-hover:text-white transition-all shadow-xs mr-2">
+                      <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()
         )}
       </div>
 

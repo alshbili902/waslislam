@@ -106,6 +106,16 @@ export const Footer: React.FC<Props> = ({ onNavigate }) => {
                 </button>
               </li>
               <li>
+                <button onClick={() => onNavigate('channels')} className="hover:text-emerald-700 dark:hover:text-amber-300 transition-colors text-right w-full font-bold text-emerald-700 dark:text-emerald-300">
+                  القنوات الإسلامية والبث المباشر
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('quran-radio')} className="hover:text-emerald-700 dark:hover:text-amber-300 transition-colors text-right w-full">
+                  إذاعة القرآن الكريم
+                </button>
+              </li>
+              <li>
                 <button onClick={() => onNavigate('discover')} className="hover:text-emerald-700 dark:hover:text-amber-300 transition-colors text-right w-full">
                   اكتشف نفحات اليوم
                 </button>

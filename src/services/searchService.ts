@@ -9,6 +9,7 @@ import { SEERAH_DATA } from '../data/seerahData';
 import { HAJJ_UMRAH_DATA } from '../data/hajjUmrahData';
 import { LIBRARY_BOOKS_DATA } from '../data/libraryData';
 import { ISLAMIC_EVENTS } from '../data/calendarEvents';
+import { channelService } from './channelService';
 
 const RECENT_SEARCHES_KEY = 'wasl_recent_searches_v1';
 
@@ -22,7 +23,8 @@ export const SEARCH_DOMAINS: { domain: SearchDomain; labelAr: string; icon: stri
   { domain: 'seerah', labelAr: 'السيرة النبوية ﷺ', icon: 'Compass' },
   { domain: 'hajj_umrah', labelAr: 'الحج والعمرة', icon: 'MapPin' },
   { domain: 'library', labelAr: 'المكتبة الإسلامية', icon: 'Library' },
-  { domain: 'events', labelAr: 'المناسبات الإسلامية', icon: 'Calendar' }
+  { domain: 'events', labelAr: 'المناسبات الإسلامية', icon: 'Calendar' },
+  { domain: 'channels', labelAr: 'القنوات الإسلامية', icon: 'Tv' }
 ];
 
 // Normalize Arabic text for robust searching (strip tashkeel, harmonize alef, taa marbuta, yaa)
@@ -303,6 +305,36 @@ export function performGlobalSearch(query: string, domainFilter?: SearchDomain):
     });
   }
 
+  // 11. القنوات الإسلامية
+  if (!domainFilter || domainFilter === 'channels') {
+    const channels = channelService.getCachedChannels();
+    channels.forEach(ch => {
+      if (!ch.isActive) return;
+      if (
+        matches(ch.name) ||
+        (ch.description && matches(ch.description)) ||
+        (ch.categoryName && matches(ch.categoryName)) ||
+        (ch.country && matches(ch.country)) ||
+        (ch.language && matches(ch.language)) ||
+        (ch.sourceName && matches(ch.sourceName))
+      ) {
+        results.push({
+          id: `channel-${ch.id}`,
+          domain: 'channels',
+          domainLabelAr: 'القنوات الإسلامية',
+          title: ch.name,
+          snippet: ch.description
+            ? `${ch.categoryName ? ch.categoryName + ' • ' : ''}${ch.description.substring(0, 140)}...`
+            : `بث مباشر • ${ch.categoryName || 'قناة إسلامية'}`,
+          targetTab: 'channels',
+          targetId: ch.slug,
+          badge: ch.categoryName || 'بث مباشر',
+          source: ch.sourceName || 'وصل الإسلام'
+        });
+      }
+    });
+  }
+
   // Compute counts per domain
   const groupedCounts: Record<SearchDomain, number> = {
     quran: 0,
@@ -314,7 +346,8 @@ export function performGlobalSearch(query: string, domainFilter?: SearchDomain):
     seerah: 0,
     hajj_umrah: 0,
     library: 0,
-    events: 0
+    events: 0,
+    channels: 0
   };
 
   results.forEach(r => {

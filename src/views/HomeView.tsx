@@ -23,7 +23,8 @@ import {
   Award,
   Quote,
   MapPin,
-  Library
+  Library,
+  Tv
 } from 'lucide-react';
 import { fetchPrayerTimes, calculateNextPrayer, POPULAR_CITIES, SAUDI_REGIONS } from '../services/prayerService';
 import { PrayerTimesData, NextPrayerInfo } from '../types';
@@ -40,6 +41,9 @@ import { useUser } from '../context/UserContext';
 import { useShareModal } from '../context/ShareContext';
 import { PWAInstallButton } from '../components/PWAInstallButton';
 import { RadioStationBadge } from '../components/RadioStationBadge';
+import { IslamicChannel } from '../types/channel';
+import { channelService } from '../services/channelService';
+import { ChannelCard } from '../components/channels/ChannelCard';
 
 interface Props {
   onNavigate: (tab: string, contextId?: any) => void;
@@ -63,7 +67,14 @@ export const HomeView: React.FC<Props> = ({ onNavigate }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { openShareModal } = useShareModal();
   const [dailyWisdom, setDailyWisdom] = useState<IslamicWisdom | null>(null);
+  const [homeChannels, setHomeChannels] = useState<IslamicChannel[]>([]);
   const dailyFeed = useMemo(() => getDailyDiscoverFeed(new Date()), []);
+
+  useEffect(() => {
+    channelService.getChannels().then((chans) => {
+      setHomeChannels(chans.slice(0, 4));
+    });
+  }, []);
 
   // Daily Ayah: Ayat Al-Kursi (Al-Baqarah 255)
   const dailyAyah = {
@@ -495,6 +506,44 @@ export const HomeView: React.FC<Props> = ({ onNavigate }) => {
           </div>
         </div>
       </section>
+
+      {/* Islamic Channels Section ("القنوات الإسلامية") */}
+      {homeChannels.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Tv className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                  القنوات الإسلامية والبث المباشر
+                </h2>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                شاهد القنوات الإسلامية والبث المباشر من مكان واحد
+              </p>
+            </div>
+
+            <button
+              onClick={() => onNavigate('channels')}
+              className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 flex items-center gap-1 transition-colors group cursor-pointer"
+            >
+              <span>عرض جميع القنوات</span>
+              <ChevronLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
+            </button>
+          </div>
+
+          {/* Carousel / Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {homeChannels.map((channel) => (
+              <ChannelCard
+                key={channel.id}
+                channel={channel}
+                onSelect={() => onNavigate('channels', channel.slug)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Daily Spiritual Cards (Daily Ayah & Daily Hadith) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

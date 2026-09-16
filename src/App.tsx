@@ -40,6 +40,7 @@ import { HajjUmrahView } from './views/HajjUmrahView';
 import { LibraryView } from './views/LibraryView';
 import { GlobalSearchView } from './views/GlobalSearchView';
 import { DiscoverView } from './views/DiscoverView';
+import { ChannelsView } from './views/ChannelsView';
 
 function AppContent() {
   const { isAuthenticated, isLoadingAuth, user } = useUser();
@@ -55,6 +56,7 @@ function AppContent() {
       if (path === 'register') return 'register';
       if (path === 'wird') return 'wird';
       if (path === 'wisdoms' || path.startsWith('wisdoms/')) return 'wisdoms';
+      if (path === 'channels' || path.startsWith('channels/')) return 'channels';
       if (path === 'quran-radio') return 'quran-radio';
       if (path === 'quran') return 'quran';
       if (path === 'azkar') return 'azkar';
@@ -78,6 +80,15 @@ function AppContent() {
   });
 
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(1);
+  const [selectedChannelSlug, setSelectedChannelSlug] = useState<string | undefined>(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.replace(/^\/+/, '');
+      if (path.startsWith('channels/')) {
+        return path.split('/')[1];
+      }
+    }
+    return undefined;
+  });
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -118,11 +129,19 @@ function AppContent() {
     if (tab === 'quran' && typeof contextId === 'number') {
       setSelectedSurahNumber(contextId);
     }
+    if (tab === 'channels' && typeof contextId === 'string') {
+      setSelectedChannelSlug(contextId);
+    }
     setCurrentTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (typeof window !== 'undefined') {
-      const newPath = tab === 'home' ? '/' : `/${tab}`;
+      const newPath =
+        tab === 'home'
+          ? '/'
+          : tab === 'channels' && typeof contextId === 'string'
+          ? `/channels/${contextId}`
+          : `/${tab}`;
       if (window.location.pathname !== newPath) {
         window.history.pushState({ tab, contextId }, '', newPath);
       }
@@ -154,7 +173,11 @@ function AppContent() {
   useEffect(() => {
     const handlePopState = () => {
       const raw = window.location.pathname.replace(/^\/+/, '') || 'home';
-      const path = raw.split('/')[0] || 'home';
+      const parts = raw.split('/');
+      const path = parts[0] || 'home';
+      if (path === 'channels' && parts[1]) {
+        setSelectedChannelSlug(parts[1]);
+      }
       setCurrentTab(path);
     };
     window.addEventListener('popstate', handlePopState);
@@ -218,6 +241,8 @@ function AppContent() {
         return <DailyWirdView onNavigate={handleNavigate} />;
       case 'wisdoms':
         return <WisdomsView onNavigate={handleNavigate} />;
+      case 'channels':
+        return <ChannelsView initialSlug={selectedChannelSlug} onNavigate={handleNavigate} />;
       case 'quran-radio':
         return <QuranRadioView onNavigate={handleNavigate} />;
       case 'quran':

@@ -26,7 +26,8 @@ import {
   ChevronDown,
   MapPin,
   Library,
-  Flame as FastingIcon
+  Flame as FastingIcon,
+  Tv
 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { BrandLogo } from './brand/BrandLogo';
@@ -257,6 +258,19 @@ export const Header: React.FC<HeaderProps> = ({
               <span>الإذاعة</span>
             </button>
 
+            {/* القنوات الإسلامية */}
+            <button
+              onClick={() => onSelectTab('channels')}
+              className={`px-3 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                currentTab === 'channels'
+                  ? 'bg-emerald-800 text-white shadow-xs'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/40'
+              }`}
+            >
+              <Tv className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>القنوات</span>
+            </button>
+
             {/* الصدقة والتبرع */}
             <button
               onClick={() => onSelectTab('donations')}
@@ -401,20 +415,39 @@ export const Header: React.FC<HeaderProps> = ({
           ))}
 
           {/* Additional Links */}
-          <div className="pt-2 border-t border-slate-100 dark:border-emerald-900 grid grid-cols-2 gap-2">
+          <div className="pt-2 border-t border-slate-100 dark:border-emerald-900 grid grid-cols-3 gap-2">
+            <button
+              onClick={() => handleNavClick('channels')}
+              className={`p-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-colors ${
+                currentTab === 'channels'
+                  ? 'bg-emerald-800 text-white font-bold'
+                  : 'bg-slate-50 dark:bg-emerald-900/30 text-slate-700 dark:text-slate-200'
+              }`}
+            >
+              <Tv className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>القنوات</span>
+            </button>
             <button
               onClick={() => handleNavClick('quran-radio')}
-              className="p-2.5 rounded-xl bg-slate-50 dark:bg-emerald-900/30 text-xs font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2"
+              className={`p-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-colors ${
+                currentTab === 'quran-radio'
+                  ? 'bg-emerald-800 text-white font-bold'
+                  : 'bg-slate-50 dark:bg-emerald-900/30 text-slate-700 dark:text-slate-200'
+              }`}
             >
-              <Radio className="w-4 h-4 text-emerald-600" />
-              <span>إذاعة القرآن الكريم</span>
+              <Radio className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>الإذاعة</span>
             </button>
             <button
               onClick={() => handleNavClick('donations')}
-              className="p-2.5 rounded-xl bg-slate-50 dark:bg-emerald-900/30 text-xs font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2"
+              className={`p-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-colors ${
+                currentTab === 'donations'
+                  ? 'bg-emerald-800 text-white font-bold'
+                  : 'bg-slate-50 dark:bg-emerald-900/30 text-slate-700 dark:text-slate-200'
+              }`}
             >
               <HandHeart className="w-4 h-4 text-rose-500" />
-              <span>الصدقة والتبرع</span>
+              <span>التبرع</span>
             </button>
           </div>
         </div>

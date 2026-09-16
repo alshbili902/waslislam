@@ -338,7 +338,7 @@ export interface UserAzkarProgress {
 export interface UserActivityItem {
   id: string;
   userId: string;
-  activityType: 'quran_read' | 'hadith_view' | 'dua_view' | 'dhikr_done' | 'radio_play' | 'tasbeeh_done' | 'search' | 'favorite_add';
+  activityType: 'quran_read' | 'hadith_view' | 'dua_view' | 'dhikr_done' | 'radio_play' | 'channel_play' | 'tasbeeh_done' | 'search' | 'favorite_add';
   titleAr: string;
   detailsAr?: string;
   metadata?: any;
@@ -497,7 +497,7 @@ export interface LibraryBookProgress {
 // ==========================================
 // 6. GLOBAL SEARCH TYPES (البحث الشامل)
 // ==========================================
-export type SearchDomain = 'quran' | 'hadith' | 'azkar' | 'dua' | 'wisdom' | 'allah_name' | 'seerah' | 'hajj_umrah' | 'library' | 'events';
+export type SearchDomain = 'quran' | 'hadith' | 'azkar' | 'dua' | 'wisdom' | 'allah_name' | 'seerah' | 'hajj_umrah' | 'library' | 'events' | 'channels';
 
 export interface GlobalSearchResult {
   id: string;
@@ -527,4 +527,9 @@ export interface DiscoverFeedData {
   libraryPick?: LibraryBook;
   featureHighlight: { title: string; desc: string; targetTab: string; icon: string };
 }
+
+// ==========================================
+// 8. ISLAMIC CHANNELS & LIVE STREAMING TYPES
+// ==========================================
+export * from './channel';
 

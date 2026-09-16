@@ -17,7 +17,8 @@ import {
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
-  Filter
+  Filter,
+  Tv
 } from 'lucide-react';
 import {
   performGlobalSearch,
@@ -91,7 +92,8 @@ export const GlobalSearchView: React.FC<GlobalSearchViewProps> = ({
     seerah: Compass,
     hajj_umrah: MapPin,
     library: Library,
-    events: Calendar
+    events: Calendar,
+    channels: Tv
   };
 
   return (

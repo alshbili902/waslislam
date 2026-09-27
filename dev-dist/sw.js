@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-8368735c'], (function (workbox) { 'use strict';
+define(['./workbox-b1bafff1'], (function (workbox) { 'use strict';
 
   self.skipWaiting();
   workbox.clientsClaim();
@@ -81,7 +81,7 @@ define(['./workbox-8368735c'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.36nhfi7h8uc"
+    "revision": "0.vvvqasvvg9g"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
@@ -117,15 +117,6 @@ define(['./workbox-8368735c'], (function (workbox) { 'use strict';
     plugins: [new workbox.ExpirationPlugin({
       maxEntries: 30,
       maxAgeSeconds: 604800
-    })]
-  }), 'GET');
-  workbox.registerRoute(/^https?:\/\/.*\.(m3u8|ts|m3u|key|mp4|aac)($|\?)/i, new workbox.NetworkOnly(), 'GET');
-  workbox.registerRoute(/\/api\/channels/i, new workbox.NetworkFirst({
-    "cacheName": "channels-api-cache",
-    "networkTimeoutSeconds": 3,
-    plugins: [new workbox.ExpirationPlugin({
-      maxEntries: 50,
-      maxAgeSeconds: 3600
     })]
   }), 'GET');
 

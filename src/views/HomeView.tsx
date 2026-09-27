@@ -24,7 +24,7 @@ import {
   Quote,
   MapPin,
   Library,
-  Tv
+  Headphones
 } from 'lucide-react';
 import { fetchPrayerTimes, calculateNextPrayer, POPULAR_CITIES, SAUDI_REGIONS } from '../services/prayerService';
 import { PrayerTimesData, NextPrayerInfo } from '../types';
@@ -41,9 +41,6 @@ import { useUser } from '../context/UserContext';
 import { useShareModal } from '../context/ShareContext';
 import { PWAInstallButton } from '../components/PWAInstallButton';
 import { RadioStationBadge } from '../components/RadioStationBadge';
-import { IslamicChannel } from '../types/channel';
-import { channelService } from '../services/channelService';
-import { ChannelCard } from '../components/channels/ChannelCard';
 
 interface Props {
   onNavigate: (tab: string, contextId?: any) => void;
@@ -67,14 +64,7 @@ export const HomeView: React.FC<Props> = ({ onNavigate }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { openShareModal } = useShareModal();
   const [dailyWisdom, setDailyWisdom] = useState<IslamicWisdom | null>(null);
-  const [homeChannels, setHomeChannels] = useState<IslamicChannel[]>([]);
   const dailyFeed = useMemo(() => getDailyDiscoverFeed(new Date()), []);
-
-  useEffect(() => {
-    channelService.getChannels().then((chans) => {
-      setHomeChannels(chans.slice(0, 4));
-    });
-  }, []);
 
   // Daily Ayah: Ayat Al-Kursi (Al-Baqarah 255)
   const dailyAyah = {
@@ -437,6 +427,73 @@ export const HomeView: React.FC<Props> = ({ onNavigate }) => {
         </div>
       </section>
 
+      {/* Quran Listening Prominent Section */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-950 to-teal-950 text-white p-6 sm:p-8 shadow-xl border border-emerald-500/30">
+        <div className="absolute inset-0 bg-arabesque-subtle opacity-15 pointer-events-none" />
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-bold">
+                <Headphones className="w-3.5 h-3.5" />
+                <span>تجربة صوتية متكاملة</span>
+              </span>
+              <span className="text-xs text-emerald-300/80">١١٤ سورة • نخبة من كبار القراء</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold font-tajawal text-white">
+              استمع إلى القرآن الكريم
+            </h2>
+            <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
+              استمع إلى تلاوات القرآن الكريم بأصوات نخبة من القراء. اختر القارئ والسورة وابدأ رحلتك مع كتاب الله مع تجربة استماع مستمرة ومريحة.
+            </p>
+          </div>
+
+          <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            <button
+              onClick={() => onNavigate('quran-listen')}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-sm shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
+            >
+              <Headphones className="w-4 h-4" />
+              <span>ابدأ الاستماع</span>
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={() => onNavigate('quran-reciters')}
+              className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/20 flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <span>تصفح القراء</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Small Selection of Verified Reciters */}
+        <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-emerald-800/50">
+          {[
+            { id: 'alafasy', name: 'مشاري العفاسي', riwayah: 'حفص عن عاصم' },
+            { id: 'abdulbasit-murattal', name: 'عبد الباسط عبد الصمد', riwayah: 'مرتل ومجود' },
+            { id: 'sudais', name: 'عبد الرحمن السديس', riwayah: 'حفص عن عاصم' },
+            { id: 'maher', name: 'ماهر المعيقلي', riwayah: 'حفص عن عاصم' },
+          ].map((rec) => (
+            <div
+              key={rec.id}
+              onClick={() => onNavigate('quran-reciter-detail', rec.id)}
+              className="p-3 rounded-2xl bg-emerald-900/40 hover:bg-emerald-800/60 border border-emerald-700/40 flex items-center gap-2.5 transition-all cursor-pointer group"
+            >
+              <div className="w-8 h-8 rounded-xl bg-emerald-950 flex items-center justify-center text-amber-300 font-bold text-xs border border-emerald-600/40 shrink-0 group-hover:scale-105 transition-transform">
+                {rec.name.charAt(0)}
+              </div>
+              <div className="min-w-0">
+                <span className="font-bold text-xs text-white block truncate group-hover:text-amber-300 transition-colors">
+                  {rec.name}
+                </span>
+                <span className="text-[10px] text-emerald-300/80 block truncate">
+                  {rec.riwayah}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Quran Radio Live Banner Section */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-900 via-emerald-950 to-teal-950 text-white p-5 sm:p-7 shadow-lg border border-emerald-700/50">
@@ -506,44 +563,6 @@ export const HomeView: React.FC<Props> = ({ onNavigate }) => {
           </div>
         </div>
       </section>
-
-      {/* Islamic Channels Section ("القنوات الإسلامية") */}
-      {homeChannels.length > 0 && (
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <Tv className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
-                  القنوات الإسلامية والبث المباشر
-                </h2>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                شاهد القنوات الإسلامية والبث المباشر من مكان واحد
-              </p>
-            </div>
-
-            <button
-              onClick={() => onNavigate('channels')}
-              className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 flex items-center gap-1 transition-colors group cursor-pointer"
-            >
-              <span>عرض جميع القنوات</span>
-              <ChevronLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
-            </button>
-          </div>
-
-          {/* Carousel / Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {homeChannels.map((channel) => (
-              <ChannelCard
-                key={channel.id}
-                channel={channel}
-                onSelect={() => onNavigate('channels', channel.slug)}
-              />
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* Daily Spiritual Cards (Daily Ayah & Daily Hadith) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

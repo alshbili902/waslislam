@@ -1507,5 +1507,96 @@ adminRouter.delete('/wisdoms/:id', (req: Request, res: Response) => {
   return res.json({ ok: true, id });
 });
 
+// ==========================================
+// 14. Quran Audio Management Endpoints
+// ==========================================
+import { INITIAL_VERIFIED_RECITERS } from './src/data/quranAudioData';
+import { QuranAudioReciter } from './src/types/quranAudio';
+
+let adminReciters: QuranAudioReciter[] = JSON.parse(JSON.stringify(INITIAL_VERIFIED_RECITERS));
+let lastQuranSyncTime: string | null = new Date().toISOString();
+
+// GET /api/admin/quran-audio/stats
+adminRouter.get('/quran-audio/stats', (req: Request, res: Response) => {
+  const totalReciters = adminReciters.length;
+  const activeReciters = adminReciters.filter(r => r.isActive).length;
+  const totalRecordings = adminReciters.reduce((sum, r) => sum + (r.moshafList[0]?.surahTotal || 114), 0);
+
+  return res.json({
+    totalReciters,
+    activeReciters,
+    totalRecordings,
+    totalSurahs: 114,
+    provider: 'شبكة mp3quran المعتمدة (mp3quran.net official CDN)',
+    lastSync: lastQuranSyncTime,
+    status: 'healthy'
+  });
+});
+
+// GET /api/admin/quran-audio/reciters
+adminRouter.get('/quran-audio/reciters', (req: Request, res: Response) => {
+  return res.json({ reciters: adminReciters });
+});
+
+// POST /api/admin/quran-audio/reciters/:id/toggle
+adminRouter.post('/quran-audio/reciters/:id/toggle', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const rec = adminReciters.find(r => r.id === id);
+  if (!rec) {
+    return res.status(404).json({ error: 'القارئ غير موجود' });
+  }
+  rec.isActive = !rec.isActive;
+  logAuditEvent('Toggle Reciter', 'QuranAudio', id, 'success', `تعديل حالة القارئ ${rec.nameAr} إلى ${rec.isActive ? 'مفعل' : 'معطل'}`, req.ip);
+  return res.json({ ok: true, id, isActive: rec.isActive });
+});
+
+// POST /api/admin/quran-audio/sync
+adminRouter.post('/quran-audio/sync', async (req: Request, res: Response) => {
+  try {
+    const fetchRes = await fetch('https://mp3quran.net/api/v3/reciters?language=ar');
+    if (!fetchRes.ok) {
+      throw new Error(`External provider error HTTP ${fetchRes.status}`);
+    }
+    const data = await fetchRes.json();
+    if (data && Array.isArray(data.reciters)) {
+      lastQuranSyncTime = new Date().toISOString();
+      logAuditEvent('Sync Quran Audio', 'QuranAudio', undefined, 'success', `تمت مزامنة ${data.reciters.length} قارئاً بنجاح`, req.ip);
+      return res.json({
+        ok: true,
+        count: data.reciters.length,
+        surahCount: 114,
+        lastSync: lastQuranSyncTime,
+        failedItems: 0,
+        provider: 'mp3quran.net'
+      });
+    }
+    return res.status(502).json({ error: 'صيغة استجابة الخادم الخارجي غير صالحة' });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'فشلت المزامنة: ' + (err?.message || '') });
+  }
+});
+
+// POST /api/admin/quran-audio/verify-stream
+adminRouter.post('/quran-audio/verify-stream', async (req: Request, res: Response) => {
+  const { url } = req.body;
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ reachable: false, error: 'الرابط مطلوب' });
+  }
+  try {
+    const check = await fetch(url, { method: 'HEAD' });
+    return res.json({
+      reachable: check.ok,
+      status: check.status,
+      contentType: check.headers.get('content-type') || ''
+    });
+  } catch (e: any) {
+    return res.json({
+      reachable: false,
+      error: e?.message || 'تعذر الاتصال'
+    });
+  }
+});
+
+
 
 

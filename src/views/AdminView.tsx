@@ -33,13 +33,13 @@ import {
   Lock,
   Building2,
   Quote,
-  Tv
+  Headphones
 } from 'lucide-react';
 import { BrandLogo } from '../components/brand/BrandLogo';
 import { useAdmin } from '../context/AdminContext';
 import { useShareModal } from '../context/ShareContext';
 import { AdminRadioManager } from '../components/AdminRadioManager';
-import { AdminChannelsManager } from '../components/admin/AdminChannelsManager';
+import { AdminQuranAudioManager } from '../components/admin/AdminQuranAudioManager';
 import { AdminWirdManager } from '../components/admin/AdminWirdManager';
 import { AdminWisdomsManager } from '../components/admin/AdminWisdomsManager';
 import { AdminPlatformUpgradesManager } from '../components/admin/AdminPlatformUpgradesManager';
@@ -54,7 +54,7 @@ interface AdminViewProps {
   onNavigate: (tab: string, contextId?: any) => void;
 }
 
-type AdminTab = 'overview' | 'wird' | 'wisdoms' | 'upgrades' | 'content' | 'sections' | 'share-cards' | 'radio' | 'channels' | 'donations' | 'binbaz' | 'users' | 'audit';
+type AdminTab = 'overview' | 'wird' | 'wisdoms' | 'upgrades' | 'content' | 'sections' | 'share-cards' | 'radio' | 'quran-audio' | 'donations' | 'binbaz' | 'users' | 'audit';
 
 export const AdminView: React.FC<AdminViewProps> = ({ onNavigate }) => {
   const { adminUsername, logoutAdmin, isAdminAuthenticated, isLoadingAdminAuth } = useAdmin();
@@ -595,7 +595,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ onNavigate }) => {
     { id: 'binbaz', label: 'موقع ابن باز', icon: Award, badge: binbazList.length },
     { id: 'share-cards', label: 'بطاقات المشاركة', icon: Share2 },
     { id: 'radio', label: 'إذاعة القرآن الكريم', icon: Radio },
-    { id: 'channels', label: 'القنوات الإسلامية', icon: Tv },
+    { id: 'quran-audio', label: 'صوتيات القرآن الكريم', icon: Headphones },
     { id: 'users', label: 'المستخدمون', icon: Users, badge: usersList.length },
     { id: 'audit', label: 'سجل التدقيق (Audit)', icon: History },
   ];
@@ -1582,8 +1582,8 @@ export const AdminView: React.FC<AdminViewProps> = ({ onNavigate }) => {
           {/* TAB 5: QURAN RADIO MANAGER */}
           {activeTab === 'radio' && <AdminRadioManager />}
 
-          {/* TAB 5.5: ISLAMIC CHANNELS & STREAMING MANAGER */}
-          {activeTab === 'channels' && <AdminChannelsManager />}
+          {/* TAB: QURAN AUDIO MANAGER */}
+          {activeTab === 'quran-audio' && <AdminQuranAudioManager />}
 
           {/* TAB 6: USERS DIRECTORY */}
           {activeTab === 'users' && (

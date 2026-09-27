@@ -5,18 +5,22 @@ import { Footer } from './components/Footer';
 import { BottomNavigation } from './components/BottomNavigation';
 import { AudioPlayer } from './components/AudioPlayer';
 import { RadioMiniPlayer } from './components/RadioMiniPlayer';
+import { QuranMiniPlayer } from './components/quran/QuranMiniPlayer';
+import { QuranFullPlayerModal } from './components/quran/QuranFullPlayerModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { SearchModal } from './components/SearchModal';
 import { UserProvider, useUser } from './context/UserContext';
 import { AdminProvider, useAdmin } from './context/AdminContext';
 import { AudioProvider } from './context/AudioContext';
 import { RadioProvider } from './context/RadioContext';
+import { QuranAudioProvider } from './context/QuranAudioContext';
 import { ShareProvider } from './context/ShareContext';
 import { ShareModal } from './components/share/ShareModal';
 
 // Views
 import { HomeView } from './views/HomeView';
 import { QuranView } from './views/QuranView';
+import { QuranListeningView } from './views/QuranListeningView';
 import { QuranRadioView } from './views/QuranRadioView';
 import { AzkarView } from './views/AzkarView';
 import { HadithView } from './views/HadithView';
@@ -40,11 +44,13 @@ import { HajjUmrahView } from './views/HajjUmrahView';
 import { LibraryView } from './views/LibraryView';
 import { GlobalSearchView } from './views/GlobalSearchView';
 import { DiscoverView } from './views/DiscoverView';
-import { ChannelsView } from './views/ChannelsView';
 
 function AppContent() {
   const { isAuthenticated, isLoadingAuth, user } = useUser();
   const { isAdminAuthenticated, isLoadingAdminAuth } = useAdmin();
+
+  const [selectedReciterSlug, setSelectedReciterSlug] = useState<string | null>(null);
+  const [selectedListeningSurahNumber, setSelectedListeningSurahNumber] = useState<number | null>(null);
 
   const [currentTab, setCurrentTab] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -56,8 +62,14 @@ function AppContent() {
       if (path === 'register') return 'register';
       if (path === 'wird') return 'wird';
       if (path === 'wisdoms' || path.startsWith('wisdoms/')) return 'wisdoms';
-      if (path === 'channels' || path.startsWith('channels/')) return 'channels';
       if (path === 'quran-radio') return 'quran-radio';
+      if (path === 'quran/listen' || path === 'quran-listen') return 'quran-listen';
+      if (path.startsWith('quran/listen/')) return 'quran-listen-surah';
+      if (path === 'quran/reciters' || path === 'quran-reciters') return 'quran-reciters';
+      if (path.startsWith('quran/reciters/')) return 'quran-reciter-detail';
+      if (path === 'quran/surahs' || path === 'quran-surahs') return 'quran-surahs';
+      if (path === 'quran/history' || path === 'quran-history') return 'quran-history';
+      if (path === 'quran/favorites' || path === 'quran-favorites') return 'quran-favorites';
       if (path === 'quran') return 'quran';
       if (path === 'azkar') return 'azkar';
       if (path === 'hadith') return 'hadith';
@@ -80,15 +92,6 @@ function AppContent() {
   });
 
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(1);
-  const [selectedChannelSlug, setSelectedChannelSlug] = useState<string | undefined>(() => {
-    if (typeof window !== 'undefined') {
-      const path = window.location.pathname.replace(/^\/+/, '');
-      if (path.startsWith('channels/')) {
-        return path.split('/')[1];
-      }
-    }
-    return undefined;
-  });
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -129,19 +132,25 @@ function AppContent() {
     if (tab === 'quran' && typeof contextId === 'number') {
       setSelectedSurahNumber(contextId);
     }
-    if (tab === 'channels' && typeof contextId === 'string') {
-      setSelectedChannelSlug(contextId);
+    if (tab === 'quran-listen-surah' && typeof contextId === 'number') {
+      setSelectedListeningSurahNumber(contextId);
+    }
+    if (tab === 'quran-reciter-detail' && typeof contextId === 'string') {
+      setSelectedReciterSlug(contextId);
     }
     setCurrentTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (typeof window !== 'undefined') {
-      const newPath =
-        tab === 'home'
-          ? '/'
-          : tab === 'channels' && typeof contextId === 'string'
-          ? `/channels/${contextId}`
-          : `/${tab}`;
+      let newPath = tab === 'home' ? '/' : `/${tab}`;
+      if (tab === 'quran-listen') newPath = '/quran/listen';
+      else if (tab === 'quran-reciters') newPath = '/quran/reciters';
+      else if (tab === 'quran-surahs') newPath = '/quran/surahs';
+      else if (tab === 'quran-history') newPath = '/quran/history';
+      else if (tab === 'quran-favorites') newPath = '/quran/favorites';
+      else if (tab === 'quran-reciter-detail' && contextId) newPath = `/quran/reciters/${contextId}`;
+      else if (tab === 'quran-listen-surah' && contextId) newPath = `/quran/listen/${contextId}`;
+
       if (window.location.pathname !== newPath) {
         window.history.pushState({ tab, contextId }, '', newPath);
       }
@@ -173,12 +182,29 @@ function AppContent() {
   useEffect(() => {
     const handlePopState = () => {
       const raw = window.location.pathname.replace(/^\/+/, '') || 'home';
-      const parts = raw.split('/');
-      const path = parts[0] || 'home';
-      if (path === 'channels' && parts[1]) {
-        setSelectedChannelSlug(parts[1]);
+      if (raw === 'quran/listen' || raw === 'quran-listen') {
+        setCurrentTab('quran-listen');
+      } else if (raw.startsWith('quran/listen/')) {
+        const surahPart = raw.split('/')[2];
+        const num = parseInt(surahPart, 10);
+        if (!isNaN(num)) setSelectedListeningSurahNumber(num);
+        setCurrentTab('quran-listen-surah');
+      } else if (raw === 'quran/reciters' || raw === 'quran-reciters') {
+        setCurrentTab('quran-reciters');
+      } else if (raw.startsWith('quran/reciters/')) {
+        const slug = raw.split('/')[2];
+        setSelectedReciterSlug(slug);
+        setCurrentTab('quran-reciter-detail');
+      } else if (raw === 'quran/surahs' || raw === 'quran-surahs') {
+        setCurrentTab('quran-surahs');
+      } else if (raw === 'quran/history' || raw === 'quran-history') {
+        setCurrentTab('quran-history');
+      } else if (raw === 'quran/favorites' || raw === 'quran-favorites') {
+        setCurrentTab('quran-favorites');
+      } else {
+        const path = raw.split('/')[0] || 'home';
+        setCurrentTab(path);
       }
-      setCurrentTab(path);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -241,10 +267,34 @@ function AppContent() {
         return <DailyWirdView onNavigate={handleNavigate} />;
       case 'wisdoms':
         return <WisdomsView onNavigate={handleNavigate} />;
-      case 'channels':
-        return <ChannelsView initialSlug={selectedChannelSlug} onNavigate={handleNavigate} />;
       case 'quran-radio':
         return <QuranRadioView onNavigate={handleNavigate} />;
+      case 'quran-listen':
+        return <QuranListeningView onNavigate={handleNavigate} initialSubTab="listen" />;
+      case 'quran-reciters':
+        return <QuranListeningView onNavigate={handleNavigate} initialSubTab="reciters" />;
+      case 'quran-reciter-detail':
+        return (
+          <QuranListeningView
+            onNavigate={handleNavigate}
+            initialSubTab="reciters"
+            initialReciterSlug={selectedReciterSlug || undefined}
+          />
+        );
+      case 'quran-surahs':
+        return <QuranListeningView onNavigate={handleNavigate} initialSubTab="surahs" />;
+      case 'quran-listen-surah':
+        return (
+          <QuranListeningView
+            onNavigate={handleNavigate}
+            initialSubTab="surahs"
+            initialSurahNumber={selectedListeningSurahNumber || 1}
+          />
+        );
+      case 'quran-history':
+        return <QuranListeningView onNavigate={handleNavigate} initialSubTab="history" />;
+      case 'quran-favorites':
+        return <QuranListeningView onNavigate={handleNavigate} initialSubTab="favorites" />;
       case 'quran':
         return <QuranView initialSurahNumber={selectedSurahNumber} />;
       case 'azkar':
@@ -324,6 +374,12 @@ function AppContent() {
       {/* Radio Floating Mini Player (visible during navigation when playing radio) */}
       <RadioMiniPlayer onExpand={() => handleNavigate('quran-radio')} />
 
+      {/* Quran Streaming Dedicated Mini Player */}
+      <QuranMiniPlayer onExpand={() => handleNavigate('quran-listen')} />
+
+      {/* Quran Fullscreen / Expanded Player Modal */}
+      <QuranFullPlayerModal />
+
       {/* Quran Ayah Recitation Audio Player Widget */}
       <AudioPlayer />
 
@@ -349,12 +405,15 @@ export default function App() {
       <AdminProvider>
         <AudioProvider>
           <RadioProvider>
-            <ShareProvider>
-              <AppContent />
-            </ShareProvider>
+            <QuranAudioProvider>
+              <ShareProvider>
+                <AppContent />
+              </ShareProvider>
+            </QuranAudioProvider>
           </RadioProvider>
         </AudioProvider>
       </AdminProvider>
     </UserProvider>
   );
 }
+

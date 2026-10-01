@@ -497,7 +497,7 @@ export interface LibraryBookProgress {
 // ==========================================
 // 6. GLOBAL SEARCH TYPES (البحث الشامل)
 // ==========================================
-export type SearchDomain = 'quran' | 'hadith' | 'azkar' | 'dua' | 'wisdom' | 'allah_name' | 'seerah' | 'hajj_umrah' | 'library' | 'events';
+export type SearchDomain = 'quran' | 'hadith' | 'azkar' | 'dua' | 'wisdom' | 'allah_name' | 'seerah' | 'hajj_umrah' | 'library' | 'events' | 'channels';
 
 export interface GlobalSearchResult {
   id: string;
@@ -529,4 +529,5 @@ export interface DiscoverFeedData {
 }
 
 export * from './quranAudio';
+export * from './khatmah';
 

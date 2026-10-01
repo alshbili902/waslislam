@@ -44,6 +44,7 @@ import { HajjUmrahView } from './views/HajjUmrahView';
 import { LibraryView } from './views/LibraryView';
 import { GlobalSearchView } from './views/GlobalSearchView';
 import { DiscoverView } from './views/DiscoverView';
+import { KhatmahView } from './views/khatmah/KhatmahView';
 
 function AppContent() {
   const { isAuthenticated, isLoadingAuth, user } = useUser();
@@ -51,6 +52,8 @@ function AppContent() {
 
   const [selectedReciterSlug, setSelectedReciterSlug] = useState<string | null>(null);
   const [selectedListeningSurahNumber, setSelectedListeningSurahNumber] = useState<number | null>(null);
+  const [selectedAyahNumber, setSelectedAyahNumber] = useState<number | undefined>(undefined);
+  const [khatmahContext, setKhatmahContext] = useState<any>(null);
 
   const [currentTab, setCurrentTab] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -86,6 +89,12 @@ function AppContent() {
       if (path === 'tasbih') return 'tasbih';
       if (path === 'fatwa') return 'fatwa';
       if (path === 'donations') return 'donations';
+      if (path === 'khatmah' || path === 'khatmah/my') return 'khatmah';
+      if (path === 'khatmah/plan' || path === 'khatmah-plan') return 'khatmah-plan';
+      if (path === 'khatmah/hifz' || path === 'khatmah-hifz') return 'khatmah-hifz';
+      if (path === 'khatmah/hifz/review' || path === 'khatmah/review' || path === 'khatmah-review') return 'khatmah-review';
+      if (path === 'khatmah/progress' || path === 'khatmah-progress') return 'khatmah-progress';
+      if (path === 'khatmah/history' || path === 'khatmah-history') return 'khatmah-history';
       if (path === 'binbaz') return 'binbaz';
     }
     return 'home';
@@ -129,8 +138,17 @@ function AppContent() {
   }, [isDarkMode]);
 
   const handleNavigate = useCallback((tab: string, contextId?: any) => {
-    if (tab === 'quran' && typeof contextId === 'number') {
-      setSelectedSurahNumber(contextId);
+    if (tab === 'quran') {
+      if (typeof contextId === 'number') {
+        setSelectedSurahNumber(contextId);
+        setSelectedAyahNumber(undefined);
+      } else if (contextId && typeof contextId === 'object') {
+        if (contextId.surah) setSelectedSurahNumber(contextId.surah);
+        if (contextId.ayah) setSelectedAyahNumber(contextId.ayah);
+      }
+    }
+    if (tab.startsWith('khatmah') && contextId) {
+      setKhatmahContext(contextId);
     }
     if (tab === 'quran-listen-surah' && typeof contextId === 'number') {
       setSelectedListeningSurahNumber(contextId);
@@ -150,6 +168,12 @@ function AppContent() {
       else if (tab === 'quran-favorites') newPath = '/quran/favorites';
       else if (tab === 'quran-reciter-detail' && contextId) newPath = `/quran/reciters/${contextId}`;
       else if (tab === 'quran-listen-surah' && contextId) newPath = `/quran/listen/${contextId}`;
+      else if (tab === 'khatmah') newPath = '/khatmah';
+      else if (tab === 'khatmah-plan') newPath = '/khatmah/plan';
+      else if (tab === 'khatmah-hifz') newPath = '/khatmah/hifz';
+      else if (tab === 'khatmah-review') newPath = '/khatmah/hifz/review';
+      else if (tab === 'khatmah-progress') newPath = '/khatmah/progress';
+      else if (tab === 'khatmah-history') newPath = '/khatmah/history';
 
       if (window.location.pathname !== newPath) {
         window.history.pushState({ tab, contextId }, '', newPath);
@@ -201,6 +225,18 @@ function AppContent() {
         setCurrentTab('quran-history');
       } else if (raw === 'quran/favorites' || raw === 'quran-favorites') {
         setCurrentTab('quran-favorites');
+      } else if (raw === 'khatmah' || raw === 'khatmah/my') {
+        setCurrentTab('khatmah');
+      } else if (raw === 'khatmah/plan' || raw === 'khatmah-plan') {
+        setCurrentTab('khatmah-plan');
+      } else if (raw === 'khatmah/hifz' || raw === 'khatmah-hifz') {
+        setCurrentTab('khatmah-hifz');
+      } else if (raw === 'khatmah/hifz/review' || raw === 'khatmah/review' || raw === 'khatmah-review') {
+        setCurrentTab('khatmah-review');
+      } else if (raw === 'khatmah/progress' || raw === 'khatmah-progress') {
+        setCurrentTab('khatmah-progress');
+      } else if (raw === 'khatmah/history' || raw === 'khatmah-history') {
+        setCurrentTab('khatmah-history');
       } else {
         const path = raw.split('/')[0] || 'home';
         setCurrentTab(path);
@@ -295,8 +331,26 @@ function AppContent() {
         return <QuranListeningView onNavigate={handleNavigate} initialSubTab="history" />;
       case 'quran-favorites':
         return <QuranListeningView onNavigate={handleNavigate} initialSubTab="favorites" />;
+      case 'khatmah':
+        return <KhatmahView initialSubTab="my" onNavigate={handleNavigate} contextParams={khatmahContext} />;
+      case 'khatmah-plan':
+        return <KhatmahView initialSubTab="plan" onNavigate={handleNavigate} contextParams={khatmahContext} />;
+      case 'khatmah-hifz':
+        return <KhatmahView initialSubTab="hifz" onNavigate={handleNavigate} contextParams={khatmahContext} />;
+      case 'khatmah-review':
+        return <KhatmahView initialSubTab="review" onNavigate={handleNavigate} contextParams={khatmahContext} />;
+      case 'khatmah-progress':
+        return <KhatmahView initialSubTab="progress" onNavigate={handleNavigate} contextParams={khatmahContext} />;
+      case 'khatmah-history':
+        return <KhatmahView initialSubTab="history" onNavigate={handleNavigate} contextParams={khatmahContext} />;
       case 'quran':
-        return <QuranView initialSurahNumber={selectedSurahNumber} />;
+        return (
+          <QuranView
+            initialSurahNumber={selectedSurahNumber}
+            initialAyahNumber={selectedAyahNumber}
+            onNavigate={handleNavigate}
+          />
+        );
       case 'azkar':
         return <AzkarView />;
       case 'hadith':

@@ -324,6 +324,43 @@ export const HomeView: React.FC<Props> = ({ onNavigate }) => {
         </div>
       </section>
 
+      {/* Subtle Khatmah Platform Card (Requirement 32) */}
+      <section className="bg-white dark:bg-emerald-950/80 rounded-3xl p-5 sm:p-6 border border-emerald-900/10 dark:border-emerald-800/50 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5 w-full sm:w-auto">
+          <div className="p-3 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 shrink-0">
+            <BookOpen className="w-5 h-5" />
+          </div>
+          <div className="space-y-0.5 text-right">
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                الختمة
+              </h3>
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800">
+                جديد
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-300">
+              ابدأ رحلتك مع القرآن وتابع تقدمك في القراءة والحفظ.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end shrink-0">
+          <button
+            onClick={() => onNavigate('khatmah')}
+            className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+          >
+            ابدأ ختمتي
+          </button>
+          <button
+            onClick={() => onNavigate('khatmah-hifz')}
+            className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/70 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition-colors cursor-pointer"
+          >
+            اختبر حفظك
+          </button>
+        </div>
+      </section>
+
       {/* Selected Platform Highlights (اسم الله اليوم، اكتشف نفحات اليوم، صيامي، المكتبة) */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Highlight 1: اسم الله اليوم */}

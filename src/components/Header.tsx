@@ -29,7 +29,9 @@ import {
   Flame as FastingIcon,
   Headphones,
   UserCheck,
-  History
+  History,
+  Mic,
+  RotateCcw
 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { BrandLogo } from './brand/BrandLogo';
@@ -64,8 +66,18 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileExpandedGroups, setMobileExpandedGroups] = useState<Record<string, boolean>>({
+    khatmah_group: true,
+  });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated } = useUser();
+
+  const toggleMobileGroup = (groupId: string) => {
+    setMobileExpandedGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }));
+  };
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -91,6 +103,19 @@ export const Header: React.FC<HeaderProps> = ({
         { id: 'quran-surahs', label: 'السور', icon: Layers, desc: 'تصفح واستماع لجميع الـ 114 سورة' },
         { id: 'quran-history', label: 'آخر استماع', icon: History, desc: 'سجل التلاوات ومتابعة الاستماع' },
         { id: 'quran-favorites', label: 'المفضلة', icon: Heart, desc: 'قراؤك وسورك وتلاواتك المفضلة' }
+      ]
+    },
+    {
+      id: 'khatmah_group',
+      label: 'الختمة',
+      icon: BookOpen,
+      items: [
+        { id: 'khatmah', label: 'ختمتي', icon: BookOpen, desc: 'لوحة متابعة الختمة الحالية والتقدم' },
+        { id: 'khatmah-plan', label: 'خطة الختمة', icon: Calendar, desc: 'إنشاء وضبط خطط الختم الميسرة' },
+        { id: 'khatmah-hifz', label: 'الحفظ والتسميع', icon: Mic, desc: 'اختبار الحفظ الصوتي التفاعلي' },
+        { id: 'khatmah-review', label: 'مراجعة الحفظ', icon: RotateCcw, desc: 'مراجعة وتثبيت الآيات المتعثرة' },
+        { id: 'khatmah-progress', label: 'تقدمي', icon: Award, desc: 'إحصائيات إنجاز الأجزاء والصفحات' },
+        { id: 'khatmah-history', label: 'السجل', icon: History, desc: 'سجل جلسات القراءة والتسميع' }
       ]
     },
     {
@@ -387,33 +412,57 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Grouped Accordions for Mobile */}
-          {dropdownGroups.map((group) => (
-            <div key={group.id} className="space-y-1.5">
-              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-400 block px-1">
-                {group.label}
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                {group.items.map((item, idx) => {
-                  const IconComp = item.icon;
-                  const isActive = currentTab === item.id;
-                  return (
-                    <button
-                      key={`${item.id}-${idx}`}
-                      onClick={() => handleNavClick(item.id)}
-                      className={`flex items-center gap-2 p-2.5 rounded-xl text-xs font-medium text-right transition-colors ${
-                        isActive
-                          ? 'bg-emerald-800 text-white font-bold'
-                          : 'bg-slate-50 dark:bg-emerald-900/30 text-slate-700 dark:text-slate-200 hover:bg-emerald-100 dark:hover:bg-emerald-800/40'
-                      }`}
-                    >
-                      <IconComp className={`w-4 h-4 shrink-0 ${isActive ? 'text-amber-300' : 'text-emerald-600 dark:text-emerald-400'}`} />
-                      <span className="truncate">{item.label}</span>
-                    </button>
-                  );
-                })}
+          {dropdownGroups.map((group) => {
+            const hasActiveChild = isTabInGroup(group);
+            const isExpanded = mobileExpandedGroups[group.id] ?? hasActiveChild;
+
+            return (
+              <div key={group.id} className="space-y-1.5 rounded-2xl p-2 bg-slate-50/70 dark:bg-emerald-900/15 border border-slate-200/60 dark:border-emerald-900/40">
+                <button
+                  type="button"
+                  onClick={() => toggleMobileGroup(group.id)}
+                  className={`w-full flex items-center justify-between p-2 rounded-xl text-xs font-bold transition-colors ${
+                    hasActiveChild
+                      ? 'text-emerald-900 dark:text-emerald-200 bg-emerald-100/70 dark:bg-emerald-900/40'
+                      : 'text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-emerald-900/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <group.icon className={`w-4 h-4 ${hasActiveChild ? 'text-amber-500' : 'text-emerald-600 dark:text-emerald-400'}`} />
+                    <span>{group.label}</span>
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                      isExpanded ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+
+                {isExpanded && (
+                  <div className="grid grid-cols-2 gap-2 pt-1 animate-in fade-in-50 duration-150">
+                    {group.items.map((item, idx) => {
+                      const IconComp = item.icon;
+                      const isActive = currentTab === item.id;
+                      return (
+                        <button
+                          key={`${item.id}-${idx}`}
+                          onClick={() => handleNavClick(item.id)}
+                          className={`flex items-center gap-2 p-2.5 rounded-xl text-xs font-medium text-right transition-colors ${
+                            isActive
+                              ? 'bg-emerald-800 text-white font-bold shadow-xs'
+                              : 'bg-white dark:bg-emerald-950/70 text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-800/40 border border-slate-100 dark:border-emerald-900/30'
+                          }`}
+                        >
+                          <IconComp className={`w-4 h-4 shrink-0 ${isActive ? 'text-amber-300' : 'text-emerald-600 dark:text-emerald-400'}`} />
+                          <span className="truncate">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Additional Links */}
           <div className="pt-2 border-t border-slate-100 dark:border-emerald-900 grid grid-cols-2 gap-2">

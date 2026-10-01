@@ -14,10 +14,13 @@ import {
   Sliders,
   Check,
   RotateCcw,
-  Copy
+  Copy,
+  Mic,
+  Award
 } from 'lucide-react';
 import { SURAHS_LIST, RECITERS_LIST } from '../data/quranMetadata';
 import { fetchSurahAyahs, normalizeArabicText } from '../services/quranService';
+import { khatmahService } from '../services/khatmahService';
 import { Ayah, SurahMeta } from '../types';
 import { useAudio } from '../context/AudioContext';
 import { useUser } from '../context/UserContext';
@@ -26,9 +29,15 @@ import { useModalScrollLock } from '../hooks/useModalScrollLock';
 
 interface Props {
   initialSurahNumber?: number;
+  initialAyahNumber?: number;
+  onNavigate?: (tab: string, contextId?: any) => void;
 }
 
-export const QuranView: React.FC<Props> = ({ initialSurahNumber = 1 }) => {
+export const QuranView: React.FC<Props> = ({
+  initialSurahNumber = 1,
+  initialAyahNumber,
+  onNavigate,
+}) => {
   const { playAyah, playSurah, isPlaying, currentAyah } = useAudio();
   const { addBookmark, updateLastReading } = useUser();
   const { openShareModal } = useShareModal();
@@ -68,6 +77,12 @@ export const QuranView: React.FC<Props> = ({ initialSurahNumber = 1 }) => {
         setAyahs(data);
         setLoading(false);
         updateLastReading(activeSurahNumber, 1, currentSurah.name);
+        khatmahService.updateReadingPosition({
+          pageNumber: currentSurah.page,
+          surahNumber: activeSurahNumber,
+          surahNameAr: currentSurah.name,
+          ayahNumber: initialAyahNumber || 1,
+        });
       }
     }
     loadSurah();
@@ -75,6 +90,18 @@ export const QuranView: React.FC<Props> = ({ initialSurahNumber = 1 }) => {
       isCancelled = true;
     };
   }, [activeSurahNumber]);
+
+  useEffect(() => {
+    if (initialAyahNumber && ayahs.length > 0) {
+      const timer = setTimeout(() => {
+        const el = document.getElementById(`ayah-${initialAyahNumber}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [initialAyahNumber, ayahs]);
 
   const filteredSurahs = SURAHS_LIST.filter((s) => {
     const matchesFilter = filterType === 'all' || s.revelationType === filterType;
@@ -232,6 +259,23 @@ export const QuranView: React.FC<Props> = ({ initialSurahNumber = 1 }) => {
               <span>استماع للسورة</span>
             </button>
 
+            {onNavigate && (
+              <button
+                onClick={() =>
+                  onNavigate('khatmah-hifz', {
+                    surah: currentSurah.number,
+                    startAyah: 1,
+                    endAyah: Math.min(10, currentSurah.numberOfAyahs),
+                  })
+                }
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 font-bold text-xs hover:bg-emerald-200 dark:hover:bg-emerald-800 transition-colors shadow-xs"
+                title="ابدأ التسميع الصوتي لهذه السورة"
+              >
+                <Mic className="w-3.5 h-3.5" />
+                <span>ابدأ التسميع</span>
+              </button>
+            )}
+
             {/* Font Zoom Controls */}
             <div className="flex items-center gap-1 bg-slate-100 dark:bg-emerald-900/60 p-1 rounded-xl text-xs">
               <button
@@ -317,6 +361,21 @@ export const QuranView: React.FC<Props> = ({ initialSurahNumber = 1 }) => {
                         >
                           <Play className="w-4 h-4" />
                         </button>
+                        {onNavigate && (
+                          <button
+                            onClick={() =>
+                              onNavigate('khatmah-hifz', {
+                                surah: currentSurah.number,
+                                startAyah: ayah.numberInSurah,
+                                endAyah: Math.min(ayah.numberInSurah + 5, currentSurah.numberOfAyahs),
+                              })
+                            }
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/50"
+                            title="تسميع هذه الآية واختبار حفظها"
+                          >
+                            <Mic className="w-4 h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={() => {
                             setSelectedAyahForTafsir(ayah);

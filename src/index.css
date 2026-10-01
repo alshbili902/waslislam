@@ -35,6 +35,12 @@
     background-color: #031c15;
     color: #f1f5f9;
   }
+
+  /* Saudi National Day Official Theme (#006C35) */
+  html[data-theme="saudi"], html[data-theme="saudi"] body, .theme-saudi {
+    background-color: #012b1c;
+    color: #f8fafc;
+  }
 }
 
 /* Islamic Geometric Subtle Background Pattern */
@@ -46,12 +52,60 @@
   background-position: 0 0, 18px 18px;
 }
 
-.dark .bg-islamic-pattern {
+.dark .bg-islamic-pattern, html[data-theme="saudi"] .bg-islamic-pattern {
   background-color: #041a14;
   background-image: radial-gradient(rgba(52, 211, 153, 0.08) 1.5px, transparent 1.5px),
                     radial-gradient(rgba(212, 175, 55, 0.06) 1.5px, transparent 1.5px);
   background-size: 36px 36px;
   background-position: 0 0, 18px 18px;
+}
+
+/* Recitation Word Status Styling */
+.word-recitation-correct {
+  color: #059669;
+  border-bottom: 2px solid #10b981;
+}
+.dark .word-recitation-correct, html[data-theme="saudi"] .word-recitation-correct {
+  color: #34d399;
+  border-bottom: 2px solid #10b981;
+}
+
+.word-recitation-incorrect {
+  color: #dc2626;
+  background-color: rgba(239, 68, 68, 0.12);
+  border-bottom: 2px solid #ef4444;
+  border-radius: 4px;
+  padding: 0 3px;
+}
+.dark .word-recitation-incorrect, html[data-theme="saudi"] .word-recitation-incorrect {
+  color: #f87171;
+  background-color: rgba(239, 68, 68, 0.22);
+  border-bottom: 2px solid #ef4444;
+}
+
+.word-recitation-unclear {
+  color: #d97706;
+  background-color: rgba(245, 158, 11, 0.12);
+  border-bottom: 2px dashed #f59e0b;
+  border-radius: 4px;
+  padding: 0 3px;
+}
+.dark .word-recitation-unclear, html[data-theme="saudi"] .word-recitation-unclear {
+  color: #fbbf24;
+  background-color: rgba(245, 158, 11, 0.22);
+}
+
+.word-recitation-missing {
+  opacity: 0.55;
+  text-decoration: line-through;
+  text-decoration-color: #ef4444;
+}
+
+.word-recitation-current {
+  background-color: rgba(16, 185, 129, 0.2);
+  border-radius: 4px;
+  padding: 0 3px;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4);
 }
 
 /* Islamic Geometric Star Ornament Background */

@@ -60,6 +60,15 @@ async function runSeoTests() {
       `type: ${res.headers['content-type']}`
     );
     assert(
+      'Sitemap DOES NOT have X-Robots-Tag header',
+      !res.headers['x-robots-tag'],
+      `x-robots-tag: ${res.headers['x-robots-tag']}`
+    );
+    assert(
+      'Sitemap DOES NOT contain noindex in headers',
+      !JSON.stringify(res.headers).toLowerCase().includes('noindex')
+    );
+    assert(
       'Sitemap starts with XML declaration',
       res.body.trim().startsWith('<?xml version="1.0" encoding="UTF-8"?>')
     );

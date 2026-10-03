@@ -99,6 +99,11 @@ async function runProdVerification() {
       (sitemapRes.headers['content-type'] || '').includes('application/xml')
     );
     assert(
+      'Prod /sitemap.xml has no X-Robots-Tag header',
+      !sitemapRes.headers['x-robots-tag'],
+      `x-robots-tag: ${sitemapRes.headers['x-robots-tag']}`
+    );
+    assert(
       'Prod /sitemap.xml contains valid XML markup',
       sitemapRes.body.includes('<urlset') && sitemapRes.body.includes('https://waslislam.fun/quran')
     );

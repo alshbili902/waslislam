@@ -1,0 +1,19 @@
+# Wasl Islamic — Official Search Engine Directives
+# https://waslislam.fun
+
+User-agent: *
+Allow: /
+
+# Private & Administrative Routes (Restricted)
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /login
+Disallow: /register
+Disallow: /settings
+Disallow: /api/
+
+# Official Sitemap & Host
+Sitemap: https://waslislam.fun/sitemap.xml
+Host: waslislam.fun

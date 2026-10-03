@@ -80,23 +80,25 @@ export class QuranSpeechEngine {
       };
 
       this.recognition.onerror = (event: any) => {
-        console.warn('SpeechRecognition error event:', event.error);
-        if (event.error === 'no-speech') {
-          // Normal silence, not fatal
+        if (event.error === 'no-speech' || event.error === 'aborted') {
+          // Normal silence or intentional cancellation, never trigger user error
           return;
         }
 
-        let userMsg = 'حدث خطأ أثناء الاستماع للتلاوة.';
+        let userMsg = 'تعذر التعرف الصوتي على التلاوة بدقة.';
         let isFatal = false;
 
         if (event.error === 'not-allowed' || event.error === 'permission-denied') {
-          userMsg = 'تم رفض إذن استخدام الميكروفون. يرجى السماح به من إعدادات المتصفح.';
+          userMsg = 'تم رفض إذن استخدام الميكروفون. يرجى السماح به من إعدادات المتصفح للمتابعة.';
           isFatal = true;
         } else if (event.error === 'audio-capture') {
           userMsg = 'لم يتم العثور على ميكروفون صالح أو هو قيد الاستخدام بواسطة تطبيق آخر.';
           isFatal = true;
         } else if (event.error === 'network') {
           userMsg = 'تعذر الاتصال بخدمة التعرف الصوتي. يرجى التحقق من اتصال الإنترنت.';
+        } else if (event.error === 'service-not-allowed') {
+          userMsg = 'خدمة التعرف الصوتي غير مسموح بها حالياً في هذا المتصفح.';
+          isFatal = true;
         }
 
         this.errorCallbacks.forEach((cb) => cb(userMsg, isFatal));

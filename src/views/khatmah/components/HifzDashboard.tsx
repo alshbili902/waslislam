@@ -20,7 +20,7 @@ import {
   Sliders,
   Filter,
 } from 'lucide-react';
-import { SURAHS_LIST } from '../../../data/quranMetadata';
+import { SURAHS_LIST, RECITERS_LIST } from '../../../data/quranMetadata';
 import { HifzProgress, HifzSession, RecitationMode, HifzStatus } from '../../../types/khatmah';
 import { HifzSessionRunner } from './HifzSessionRunner';
 import { khatmahService } from '../../../services/khatmahService';
@@ -53,6 +53,7 @@ export const HifzDashboard: React.FC<Props> = ({
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(preselectedSurahNumber || 67); // Al-Mulk default
   const [startAyah, setStartAyah] = useState<number>(preselectedStartAyah || 1);
   const [endAyah, setEndAyah] = useState<number>(preselectedEndAyah || 10);
+  const [selectedReciterId, setSelectedReciterId] = useState<string>('ar.alafasy');
   const [recitationMode, setRecitationMode] = useState<RecitationMode>('recite_text_visible');
   const [surahSearchQuery, setSurahSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<'all' | 'memorized' | 'in_progress' | 'needs_review'>('all');
@@ -63,6 +64,7 @@ export const HifzDashboard: React.FC<Props> = ({
     startAyah: number;
     endAyah: number;
     mode: RecitationMode;
+    reciterId: string;
   } | null>(
     preselectedSurahNumber
       ? {
@@ -70,6 +72,7 @@ export const HifzDashboard: React.FC<Props> = ({
           startAyah: preselectedStartAyah || 1,
           endAyah: preselectedEndAyah || 10,
           mode: 'recite_text_visible',
+          reciterId: 'ar.alafasy',
         }
       : null
   );
@@ -100,6 +103,7 @@ export const HifzDashboard: React.FC<Props> = ({
       startAyah,
       endAyah: Math.min(endAyah, selectedSurahMeta.numberOfAyahs),
       mode: recitationMode,
+      reciterId: selectedReciterId,
     });
     setIsSelectModalOpen(false);
   };
@@ -126,6 +130,7 @@ export const HifzDashboard: React.FC<Props> = ({
         startAyah={activeSessionParams.startAyah}
         endAyah={activeSessionParams.endAyah}
         initialMode={activeSessionParams.mode}
+        initialReciterId={activeSessionParams.reciterId}
         userId={userId}
         onExit={() => {
           setActiveSessionParams(null);
@@ -527,7 +532,37 @@ export const HifzDashboard: React.FC<Props> = ({
                 </div>
               </div>
 
-              {/* 3. Recitation Modes (Requirement 11) */}
+              {/* 3. Reciter Picker for Listening */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                  القارئ المعتمد للاستماع
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {RECITERS_LIST.map((r) => {
+                    const isSelected = selectedReciterId === r.id;
+                    return (
+                      <button
+                        type="button"
+                        key={r.id}
+                        onClick={() => setSelectedReciterId(r.id)}
+                        className={`p-2.5 rounded-xl border text-right transition-all flex items-center justify-between cursor-pointer ${
+                          isSelected
+                            ? 'bg-emerald-50 dark:bg-emerald-900/50 border-emerald-600 shadow-xs text-emerald-950 dark:text-white font-bold'
+                            : 'bg-white dark:bg-emerald-950/40 border-slate-200 dark:border-emerald-900/40 text-slate-700 dark:text-slate-300 hover:border-emerald-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Volume2 className={`w-3.5 h-3.5 ${isSelected ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-400'}`} />
+                          <span className="text-xs">{r.nameAr}</span>
+                        </div>
+                        {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 4. Recitation Modes (Requirement 11) */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
                   اختر وضع التسميع

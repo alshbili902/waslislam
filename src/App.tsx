@@ -16,6 +16,7 @@ import { RadioProvider } from './context/RadioContext';
 import { QuranAudioProvider } from './context/QuranAudioContext';
 import { ShareProvider } from './context/ShareContext';
 import { ShareModal } from './components/share/ShareModal';
+import { SeoHead } from './components/SeoHead';
 
 // Views
 import { HomeView } from './views/HomeView';
@@ -253,6 +254,7 @@ function AppContent() {
   if (currentTab === 'admin/login') {
     return (
       <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
+        <SeoHead key="admin-login" />
         <AdminLoginView onNavigate={handleNavigate} />
       </div>
     );
@@ -262,6 +264,7 @@ function AppContent() {
     if (isLoadingAdminAuth) {
       return (
         <div className="min-h-screen bg-[#021812] flex items-center justify-center">
+          <SeoHead key="admin-loading" />
           <div className="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin" />
         </div>
       );
@@ -269,12 +272,14 @@ function AppContent() {
     if (!isAdminAuthenticated) {
       return (
         <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
+          <SeoHead key="admin-unauth" />
           <AdminLoginView onNavigate={handleNavigate} />
         </div>
       );
     }
     return (
       <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
+        <SeoHead key="admin" />
         <AdminView onNavigate={handleNavigate} />
       </div>
     );
@@ -391,6 +396,8 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#031c15] text-slate-900 dark:text-slate-100 flex flex-col font-tajawal selection:bg-emerald-500 selection:text-white transition-colors duration-200">
+      <SeoHead key={currentTab} />
+
       {/* Main App Navigation Header */}
       <Header
         currentTab={currentTab}

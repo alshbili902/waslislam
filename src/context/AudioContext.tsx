@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { Ayah, Reciter, SurahMeta } from '../types';
 import { RECITERS_LIST, SURAHS_LIST } from '../data/quranMetadata';
+import { resolveAyahAudioSource } from '../services/quranAyahAudioService';
 
 interface AudioContextType {
   isPlaying: boolean;
@@ -34,10 +35,32 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentTime, setCurrentTime] = useState(0);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentSurahRef = useRef<SurahMeta | null>(null);
+  const ayahPlaylistRef = useRef<Ayah[]>([]);
+  const playlistIndexRef = useRef(0);
+  const selectedReciterRef = useRef<Reciter>(RECITERS_LIST[0]);
+
+  // Sync refs
+  useEffect(() => {
+    currentSurahRef.current = currentSurah;
+  }, [currentSurah]);
 
   useEffect(() => {
-    audioRef.current = new Audio();
-    const audio = audioRef.current;
+    ayahPlaylistRef.current = ayahPlaylist;
+  }, [ayahPlaylist]);
+
+  useEffect(() => {
+    playlistIndexRef.current = playlistIndex;
+  }, [playlistIndex]);
+
+  useEffect(() => {
+    selectedReciterRef.current = selectedReciter;
+  }, [selectedReciter]);
+
+  useEffect(() => {
+    const audio = new Audio();
+    audio.preload = 'auto';
+    audioRef.current = audio;
 
     const onTimeUpdate = () => {
       if (audio.duration) {
@@ -51,44 +74,83 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     const onEnded = () => {
-      // Auto-advance to next ayah in playlist
-      setPlaylistIndex((prev) => {
-        const next = prev + 1;
-        if (ayahPlaylist.length > next) {
-          const nextAyah = ayahPlaylist[next];
-          setCurrentAyah(nextAyah);
-          loadAndPlay(nextAyah, selectedReciter);
-          return next;
+      const playlist = ayahPlaylistRef.current;
+      const curIdx = playlistIndexRef.current;
+      const next = curIdx + 1;
+      if (playlist.length > next) {
+        const nextAyah = playlist[next];
+        setPlaylistIndex(next);
+        setCurrentAyah(nextAyah);
+        loadAndPlay(nextAyah, selectedReciterRef.current, currentSurahRef.current);
+      } else {
+        setIsPlaying(false);
+      }
+    };
+
+    const onError = () => {
+      console.warn('Global Quran audio player error event, attempting fallback');
+      const curAyah = ayahPlaylistRef.current[playlistIndexRef.current];
+      const curSurah = currentSurahRef.current;
+      if (curAyah && curSurah) {
+        const res = resolveAyahAudioSource({
+          surahNumber: curSurah.number,
+          ayahNumberInSurah: curAyah.numberInSurah,
+          reciterId: selectedReciterRef.current.id,
+        });
+        if (audio.src !== res.fallbackUrl && res.fallbackUrl) {
+          audio.src = res.fallbackUrl;
+          audio.load();
+          audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
         } else {
           setIsPlaying(false);
-          return prev;
         }
-      });
+      } else {
+        setIsPlaying(false);
+      }
     };
 
     audio.addEventListener('timeupdate', onTimeUpdate);
     audio.addEventListener('loadedmetadata', onLoadedMetadata);
     audio.addEventListener('ended', onEnded);
+    audio.addEventListener('error', onError);
 
     return () => {
       audio.removeEventListener('timeupdate', onTimeUpdate);
       audio.removeEventListener('loadedmetadata', onLoadedMetadata);
       audio.removeEventListener('ended', onEnded);
+      audio.removeEventListener('error', onError);
       audio.pause();
+      audio.src = '';
     };
-  }, [ayahPlaylist, selectedReciter]);
+  }, []);
 
-  const loadAndPlay = (ayah: Ayah, reciter: Reciter) => {
+  const loadAndPlay = (ayah: Ayah, reciter: Reciter, surahOverride?: SurahMeta | null) => {
     if (!audioRef.current) return;
-    const url = ayah.audio || `https://cdn.islamic.network/quran/audio/128/${reciter.id}/${ayah.number}.mp3`;
+    const surah = surahOverride || currentSurahRef.current;
+    const surahNum = surah?.number || 1;
+
+    const res = resolveAyahAudioSource({
+      surahNumber: surahNum,
+      ayahNumberInSurah: ayah.numberInSurah,
+      reciterId: reciter.id,
+    });
+
+    const url = res.valid ? res.primaryUrl : ayah.audio || '';
+    if (!url) return;
+
     audioRef.current.src = url;
-    audioRef.current
-      .play()
-      .then(() => setIsPlaying(true))
-      .catch((e) => {
-        console.warn('Audio play prevented:', e);
-        setIsPlaying(false);
-      });
+    audioRef.current.load();
+    const playPromise = audioRef.current.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => setIsPlaying(true))
+        .catch((e) => {
+          if (e.name !== 'AbortError') {
+            console.warn('Audio play prevented or blocked:', e);
+          }
+          setIsPlaying(false);
+        });
+    }
   };
 
   const playAyah = (surah: SurahMeta, ayah: Ayah) => {

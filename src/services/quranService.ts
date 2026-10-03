@@ -1,5 +1,6 @@
 import { Ayah } from '../types';
 import { OFFLINE_SURAHS, SURAHS_LIST } from '../data/quranMetadata';
+import { calculateGlobalAyahNumber } from './quranAyahAudioService';
 
 export interface SurahDetailResponse {
   number: number;
@@ -43,11 +44,12 @@ export async function fetchSurahAyahs(
         const tafsirEd = data.data[2] || null;
 
         return textEd.ayahs.map((a: any, idx: number) => {
-          const audioUrl = audioEd?.ayahs?.[idx]?.audio || `https://cdn.islamic.network/quran/audio/128/${reciterEdition}/${a.number}.mp3`;
+          const globalNumber = a.number || calculateGlobalAyahNumber(surahNumber, a.numberInSurah);
+          const audioUrl = audioEd?.ayahs?.[idx]?.audio || `https://cdn.islamic.network/quran/audio/128/${reciterEdition}/${globalNumber}.mp3`;
           const tafsirText = tafsirEd?.ayahs?.[idx]?.text || '';
 
           return {
-            number: a.number,
+            number: globalNumber,
             numberInSurah: a.numberInSurah,
             text: a.text,
             juz: a.juz,
@@ -69,37 +71,44 @@ export async function fetchSurahAyahs(
   // Check offline pre-bundled surah
   const offlineData = OFFLINE_SURAHS[surahNumber];
   if (offlineData) {
-    return offlineData.ayahs.map((a, idx) => ({
-      number: idx + 1,
-      numberInSurah: a.numberInSurah,
-      text: a.text,
-      juz: 1,
-      manzil: 1,
-      page: 1,
-      ruku: 1,
-      hizbQuarter: 1,
-      sajda: false,
-      audio: `https://cdn.islamic.network/quran/audio/128/${reciterEdition}/${idx + 1}.mp3`,
-      tafsir: a.tafsir
-    }));
+    return offlineData.ayahs.map((a) => {
+      const globalNumber = calculateGlobalAyahNumber(surahNumber, a.numberInSurah);
+      return {
+        number: globalNumber,
+        numberInSurah: a.numberInSurah,
+        text: a.text,
+        juz: 1,
+        manzil: 1,
+        page: 1,
+        ruku: 1,
+        hizbQuarter: 1,
+        sajda: false,
+        audio: `https://cdn.islamic.network/quran/audio/128/${reciterEdition}/${globalNumber}.mp3`,
+        tafsir: a.tafsir
+      };
+    });
   }
 
   // Fallback placeholder structure for any offline surah with accurate meta
   const meta = SURAHS_LIST.find((s) => s.number === surahNumber);
   const count = meta ? meta.numberOfAyahs : 7;
-  return Array.from({ length: count }, (_, i) => ({
-    number: i + 1,
-    numberInSurah: i + 1,
-    text: i === 0 && surahNumber !== 9 ? 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ' : `آية كريمة من سورة ${meta?.name || ''} (${i + 1})`,
-    juz: meta?.juz || 1,
-    manzil: 1,
-    page: meta?.page || 1,
-    ruku: 1,
-    hizbQuarter: 1,
-    sajda: false,
-    audio: `https://cdn.islamic.network/quran/audio/128/${reciterEdition}/${i + 1}.mp3`,
-    tafsir: 'تفسير الآية الكريمة سيتوفر فور الاتصال بالشبكة.'
-  }));
+  return Array.from({ length: count }, (_, i) => {
+    const ayahInSurah = i + 1;
+    const globalNumber = calculateGlobalAyahNumber(surahNumber, ayahInSurah);
+    return {
+      number: globalNumber,
+      numberInSurah: ayahInSurah,
+      text: i === 0 && surahNumber !== 9 ? 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ' : `آية كريمة من سورة ${meta?.name || ''} (${ayahInSurah})`,
+      juz: meta?.juz || 1,
+      manzil: 1,
+      page: meta?.page || 1,
+      ruku: 1,
+      hizbQuarter: 1,
+      sajda: false,
+      audio: `https://cdn.islamic.network/quran/audio/128/${reciterEdition}/${globalNumber}.mp3`,
+      tafsir: 'تفسير الآية الكريمة سيتوفر فور الاتصال بالشبكة.'
+    };
+  });
 }
 
 // Search Quran by query term across surah names or verses

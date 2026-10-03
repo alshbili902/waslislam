@@ -1,3 +1,4 @@
+import fs from 'fs';
 import express from 'express';
 import path from 'path';
 import https from 'https';
@@ -17,10 +18,15 @@ import {
 } from './server-admin';
 import { userAuthRouter } from './server-user-auth';
 import { channelsRouter } from './server-channels';
+import {
+  generateSitemapXml,
+  generateRobotsTxt,
+  injectSeoMetadata
+} from './src/seo/seoGenerator';
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   app.use(express.json());
 
@@ -201,6 +207,38 @@ async function startServer() {
     }
   });
 
+  // Canonicalization & HTTPS enforcement for production
+  app.use((req, res, next) => {
+    const host = (req.headers.host || '').toLowerCase();
+    const proto = (req.headers['x-forwarded-proto'] || req.protocol || '').toString().toLowerCase();
+
+    // 1. Redirect www.waslislam.fun to canonical waslislam.fun
+    if (host.startsWith('www.waslislam.fun')) {
+      return res.redirect(301, `https://waslislam.fun${req.originalUrl}`);
+    }
+
+    // 2. Redirect HTTP to HTTPS in production
+    if (process.env.NODE_ENV === 'production' && proto === 'http' && host.includes('waslislam.fun')) {
+      return res.redirect(301, `https://waslislam.fun${req.originalUrl}`);
+    }
+
+    next();
+  });
+
+  // Dedicated Official Search Engine Endpoints
+  app.get('/sitemap.xml', (_req, res) => {
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=86400');
+    res.setHeader('X-Robots-Tag', 'noindex');
+    res.send(generateSitemapXml());
+  });
+
+  app.get('/robots.txt', (_req, res) => {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(generateRobotsTxt());
+  });
+
   // Vite middleware for development or static serving for production
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
@@ -215,9 +253,26 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    // Serve static files with index: false to prevent bypassing server SEO injection
+    app.use(express.static(distPath, { index: false }));
+
+    let cachedHtml = '';
+    const indexHtmlPath = path.join(distPath, 'index.html');
+    if (fs.existsSync(indexHtmlPath)) {
+      try {
+        cachedHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
+      } catch (err) {
+        console.error('Error reading dist/index.html:', err);
+      }
+    }
+
     app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      if (cachedHtml) {
+        const enrichedHtml = injectSeoMetadata(cachedHtml, req.path);
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        return res.send(enrichedHtml);
+      }
+      res.sendFile(indexHtmlPath);
     });
   }
 

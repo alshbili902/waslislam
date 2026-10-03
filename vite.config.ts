@@ -75,7 +75,17 @@ export default defineConfig(() => {
           maximumFileSizeToCacheInBytes: 25 * 1024 * 1024,
           globIgnores: ['**/test-*.png', '**/sample-*.png'],
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+          navigateFallbackDenylist: [
+            /^\/sitemap\.xml$/,
+            /^\/robots\.txt$/,
+            /^\/api\//,
+          ],
           runtimeCaching: [
+            {
+              // Search engine & SEO endpoints must never be served stale or intercepted by SW
+              urlPattern: /\/(sitemap\.xml|robots\.txt)$/i,
+              handler: 'NetworkOnly',
+            },
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
               handler: 'CacheFirst',

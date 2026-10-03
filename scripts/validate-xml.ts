@@ -64,4 +64,5 @@ function validateXml(filePath: string) {
   }
 }
 
-validateXml('./prod_sitemap.xml');
+const targetPath = process.argv[2] || './public/sitemap.xml';
+validateXml(targetPath);

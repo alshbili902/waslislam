@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#065F46"/>
+      <stop offset="100%" stop-color="#044E3D"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Background with subtle border -->
+  <rect width="512" height="512" rx="128" fill="url(#emeraldGrad)"/>
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-opacity="0.4"/>
+  
+  <!-- Islamic Arch Motif -->
+  <path d="M 176 390 V 260 C 176 180, 256 120, 256 120 C 256 120, 336 180, 336 260 V 390 Z" 
+        fill="none" stroke="url(#goldGrad)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>
+
+  <!-- Quran Open Book Symbol -->
+  <g transform="translate(256, 300)">
+    <!-- Left Page -->
+    <path d="M -12 -10 C -45 -35, -100 -35, -135 -15 C -138 -13, -140 -9, -140 -5 L -140 75 C -140 80, -135 84, -130 82 C -95 65, -45 65, -12 85 Z" 
+          fill="url(#goldGrad)" opacity="0.95" filter="url(#glow)"/>
+    <!-- Right Page -->
+    <path d="M 12 -10 C 45 -35, 100 -35, 135 -15 C 138 -13, 140 -9, 140 -5 L 140 75 C 140 80, 135 84, 130 82 C 95 65, 45 65, 12 85 Z" 
+          fill="url(#goldGrad)" opacity="0.95" filter="url(#glow)"/>
+    <!-- Center Spine & Stand Motif -->
+    <path d="M -12 85 L 0 95 L 12 85 L 0 65 Z" fill="#D97706"/>
+    <!-- Rehal Base -->
+    <path d="M -70 95 L -20 125 L 20 125 L 70 95" fill="none" stroke="url(#goldGrad)" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Eight-Point Islamic Star (Khatim) -->
+  <g transform="translate(256, 175) scale(0.75)">
+    <polygon points="0,-40 28,-28 40,0 28,28 0,40 -28,28 -40,0 -28,-28" fill="url(#goldGrad)" filter="url(#glow)"/>
+    <circle cx="0" cy="0" r="14" fill="#044E3D"/>
+    <circle cx="0" cy="0" r="6" fill="url(#goldGrad)"/>
+  </g>
+</svg>

@@ -1,0 +1,400 @@
+/* ==============================================================================
+   Wasl Islamic (منصة وصل الإسلامية) - Comprehensive Motion Design System
+   Cinematic Transitions, GPU-Accelerated Animations, Card Micro-Interactions,
+   Signature Emerald Sweep, and Reduced-Motion Accessibility Rules
+   ============================================================================== */
+
+:root {
+  --motion-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --motion-ease-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* ------------------------------------------------------------------------------
+   1. Keyframes
+   ------------------------------------------------------------------------------ */
+
+/* Smooth page/section entrance with subtle lift */
+@keyframes waslPageEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.995);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Signature Emerald & Gold Light Sweep */
+@keyframes emeraldLightSweep {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+/* Subtle card entrance rise */
+@keyframes waslCardRise {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal backdrop fade */
+@keyframes waslFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal dialog zoom & slide */
+@keyframes waslModalZoom {
+  0% {
+    opacity: 0;
+    transform: scale(0.94) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Dropdown popover entrance */
+@keyframes waslDropdownSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Bottom audio bar entrance */
+@keyframes waslAudioBarSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Skeleton shimmer sweep */
+@keyframes waslShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Gentle ambient pulse */
+@keyframes waslAmbientPulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.02);
+  }
+}
+
+/* ------------------------------------------------------------------------------
+   2. Cinematic Page & Tab Transitions
+   ------------------------------------------------------------------------------ */
+
+.wasl-page-transition {
+  animation: waslPageEntrance 380ms var(--motion-ease-expo) forwards;
+  will-change: transform, opacity;
+  transform-origin: top center;
+}
+
+/* Signature Ambient Light Beam at top of viewport */
+.wasl-signature-sweep-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  overflow: hidden;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.wasl-signature-sweep-bar {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(6, 95, 70, 0.4) 20%,
+    #10b981 50%,
+    #f59e0b 80%,
+    transparent 100%
+  );
+  animation: emeraldLightSweep 650ms var(--motion-ease-expo) forwards;
+  box-shadow: 0 0 14px #10b981, 0 0 24px rgba(245, 158, 11, 0.5);
+}
+
+[data-theme='dark'] .wasl-signature-sweep-bar {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(16, 185, 129, 0.3) 20%,
+    #34d399 50%,
+    #fbbf24 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 16px #34d399, 0 0 28px rgba(251, 191, 36, 0.6);
+}
+
+/* ------------------------------------------------------------------------------
+   3. Advanced Card Motion & Tactile Interactions
+   ------------------------------------------------------------------------------ */
+
+.wasl-card {
+  position: relative;
+  transition: 
+    transform 280ms var(--motion-ease-expo),
+    box-shadow 280ms var(--motion-ease-expo),
+    border-color 280ms ease,
+    background-color 280ms ease;
+  will-change: transform, box-shadow;
+}
+
+/* Desktop Hover Elevation */
+@media (hover: hover) and (pointer: fine) {
+  .wasl-card:hover,
+  .wasl-card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 
+      0 12px 28px -8px var(--primary-glow),
+      0 4px 12px -2px rgba(0, 0, 0, 0.05);
+    border-color: var(--primary);
+  }
+
+  .wasl-card-gold:hover {
+    transform: translateY(-4px);
+    box-shadow: 
+      0 12px 28px -8px var(--gold-glow),
+      0 4px 12px -2px rgba(0, 0, 0, 0.05);
+    border-color: var(--gold);
+  }
+}
+
+/* Mobile & Touch Immediate Tactile Press Feedback */
+.wasl-card:active,
+.wasl-card-hover:active,
+.wasl-touch-press:active {
+  transform: scale(0.978);
+  transition-duration: 100ms;
+}
+
+/* ------------------------------------------------------------------------------
+   4. Premium Button & Interactive Control Feedback
+   ------------------------------------------------------------------------------ */
+
+.wasl-btn-interactive {
+  position: relative;
+  transition: 
+    transform 160ms var(--motion-ease-spring),
+    box-shadow 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease;
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wasl-btn-interactive:hover {
+    transform: translateY(-1.5px);
+  }
+}
+
+.wasl-btn-interactive:active {
+  transform: scale(0.96);
+  transition-duration: 80ms;
+}
+
+/* Icon Buttons with Micro-Movement */
+.wasl-icon-btn {
+  transition: transform 180ms var(--motion-ease-expo), color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wasl-icon-btn:hover {
+    transform: scale(1.08);
+  }
+}
+
+.wasl-icon-btn:active {
+  transform: scale(0.92);
+}
+
+/* ------------------------------------------------------------------------------
+   5. Dropdowns & Menus
+   ------------------------------------------------------------------------------ */
+
+.wasl-dropdown-menu {
+  animation: waslDropdownSlide 240ms var(--motion-ease-expo) forwards;
+  transform-origin: top right;
+  will-change: transform, opacity;
+}
+
+/* ------------------------------------------------------------------------------
+   6. Modals & Dialogs
+   ------------------------------------------------------------------------------ */
+
+.wasl-modal-backdrop {
+  animation: waslFadeIn 250ms ease forwards;
+}
+
+.wasl-modal-dialog {
+  animation: waslModalZoom 300ms var(--motion-ease-expo) forwards;
+  will-change: transform, opacity;
+}
+
+/* ------------------------------------------------------------------------------
+   7. Audio Player Transitions
+   ------------------------------------------------------------------------------ */
+
+.wasl-audio-bar-entrance {
+  animation: waslAudioBarSlide 340ms var(--motion-ease-expo) forwards;
+  will-change: transform, opacity;
+}
+
+/* ------------------------------------------------------------------------------
+   8. Staggered Reveals
+   ------------------------------------------------------------------------------ */
+
+.wasl-stagger-1 { animation-delay: 35ms; }
+.wasl-stagger-2 { animation-delay: 70ms; }
+.wasl-stagger-3 { animation-delay: 105ms; }
+.wasl-stagger-4 { animation-delay: 140ms; }
+.wasl-stagger-5 { animation-delay: 175ms; }
+.wasl-stagger-6 { animation-delay: 210ms; }
+.wasl-stagger-7 { animation-delay: 245ms; }
+.wasl-stagger-8 { animation-delay: 280ms; }
+
+/* ------------------------------------------------------------------------------
+   9. Scroll Reveal Classes (Driven by IntersectionObserver)
+   ------------------------------------------------------------------------------ */
+
+.wasl-scroll-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: 
+    opacity 420ms var(--motion-ease-expo),
+    transform 420ms var(--motion-ease-expo);
+  will-change: opacity, transform;
+}
+
+.wasl-scroll-reveal.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Scale variant */
+.wasl-scroll-reveal-scale {
+  opacity: 0;
+  transform: scale(0.96) translateY(14px);
+  transition: 
+    opacity 420ms var(--motion-ease-expo),
+    transform 420ms var(--motion-ease-expo);
+  will-change: opacity, transform;
+}
+
+.wasl-scroll-reveal-scale.is-revealed {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* ------------------------------------------------------------------------------
+   10. Skeleton Shimmer State
+   ------------------------------------------------------------------------------ */
+
+.wasl-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-card-subtle) 25%,
+    rgba(6, 95, 70, 0.08) 50%,
+    var(--bg-card-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: waslShimmer 1.8s infinite linear;
+}
+
+[data-theme='dark'] .wasl-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-card-subtle) 25%,
+    rgba(16, 185, 129, 0.12) 50%,
+    var(--bg-card-subtle) 75%
+  );
+  background-size: 200% 100%;
+  animation: waslShimmer 1.8s infinite linear;
+}
+
+/* ------------------------------------------------------------------------------
+   11. Strict Reduced Motion Protection
+   ------------------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .wasl-page-transition,
+  .wasl-signature-sweep-bar,
+  .wasl-card,
+  .wasl-btn-interactive,
+  .wasl-icon-btn,
+  .wasl-dropdown-menu,
+  .wasl-modal-dialog,
+  .wasl-modal-backdrop,
+  .wasl-audio-bar-entrance,
+  .wasl-scroll-reveal,
+  .wasl-scroll-reveal-scale {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    transition: none !important;
+  }
+}
+
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation: none !important;
+  transform: none !important;
+  transition: none !important;
+}

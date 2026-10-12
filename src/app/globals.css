@@ -1,0 +1,261 @@
+@import "tailwindcss";
+@import "../styles/motion.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile Touch & Tap Interaction Optimization */
+button,
+a,
+input,
+select,
+textarea,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
+/* Ensure safe area bottom padding respects mobile viewports and home indicators */
+.safe-area-pb {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
+}
+
+:root {
+  --font-cairo: 'Cairo', system-ui, sans-serif;
+  --font-quran: 'Amiri', 'Traditional Arabic', serif;
+  --font-tajawal: 'Tajawal', system-ui, sans-serif;
+
+  /* Theme: Light (Emerald Ivory) */
+  --bg-main: #f8f6f0;
+  --bg-card: #ffffff;
+  --bg-card-subtle: #f3efe6;
+  --border-color: rgba(6, 95, 70, 0.12);
+  --border-gold: rgba(217, 119, 6, 0.25);
+  --primary: #065f46;
+  --primary-hover: #044e3d;
+  --primary-light: #ecfdf5;
+  --primary-glow: rgba(6, 95, 70, 0.15);
+  --emerald-deep: #064e3b;
+  --primary-dark: #044e3d;
+  --gold: #d97706;
+  --gold-hover: #b45309;
+  --gold-light: #fef3c7;
+  --gold-glow: rgba(217, 119, 6, 0.2);
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-primary: #065f46;
+  --accent-teal: #0d9488;
+}
+
+[data-theme='dark'] {
+  --bg-main: #0a1114;
+  --bg-card: #121e24;
+  --bg-card-subtle: #182830;
+  --border-color: rgba(16, 185, 129, 0.15);
+  --border-gold: rgba(245, 158, 11, 0.25);
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --primary-light: rgba(16, 185, 129, 0.12);
+  --primary-glow: rgba(16, 185, 129, 0.2);
+  --emerald-deep: #059669;
+  --primary-dark: #064e3b;
+  --gold: #f59e0b;
+  --gold-hover: #d97706;
+  --gold-light: rgba(245, 158, 11, 0.15);
+  --gold-glow: rgba(245, 158, 11, 0.25);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-primary: #34d399;
+  --accent-teal: #14b8a6;
+}
+
+body {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  position: relative;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-cairo);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+video,
+iframe,
+svg {
+  max-width: 100%;
+}
+
+.font-quran {
+  font-family: var(--font-quran) !important;
+}
+
+.font-cairo {
+  font-family: var(--font-cairo) !important;
+}
+
+.font-tajawal {
+  font-family: var(--font-tajawal) !important;
+}
+
+/* Islamic Geometric Pattern Overlay */
+.islamic-pattern {
+  background-image: radial-gradient(rgba(6, 95, 70, 0.04) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+[data-theme='dark'] .islamic-pattern {
+  background-image: radial-gradient(rgba(16, 185, 129, 0.06) 1px, transparent 0);
+}
+
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(6, 95, 70, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 95, 70, 0.4);
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+}
+
+.glass-gold {
+  background: var(--gold-light);
+  border: 1px solid var(--border-gold);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 25px var(--primary-glow);
+}
+
+.glow-gold {
+  box-shadow: 0 0 25px var(--gold-glow);
+}
+
+/* Quran Ayah Frame Symbol */
+.ayah-end-symbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  font-family: var(--font-cairo);
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 6px;
+  vertical-align: middle;
+}
+
+/* ==============================================================================
+   Accessibility & Senior Mode Styling
+   ============================================================================== */
+.senior-mode {
+  --text-main: #000000;
+  font-size: calc(1rem * var(--font-scale, 1.25));
+  line-height: 1.8;
+}
+
+[data-theme='dark'].senior-mode {
+  --text-main: #ffffff;
+  --bg-main: #060a0c;
+  --bg-card: #0d171c;
+}
+
+.senior-mode button,
+.senior-mode input,
+.senior-mode select,
+.senior-mode a {
+  min-height: 48px;
+  min-width: 48px;
+  font-size: 1.05rem;
+}
+
+.senior-mode p,
+.senior-mode span,
+.senior-mode div {
+  line-height: 1.85;
+}
+
+/* High Contrast Mode */
+.high-contrast {
+  --border-color: #065f46;
+  --border-gold: #d97706;
+}
+
+[data-theme='dark'].high-contrast {
+  --border-color: #10b981;
+  --border-gold: #fbbf24;
+}
+
+.high-contrast button,
+.high-contrast input,
+.high-contrast .border {
+  border-width: 2px !important;
+}
+
+/* Reduced Motion Mode */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.reduced-motion * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* ==============================================================================
+   Synchronized Audio Reading Highlighting
+   ============================================================================== */
+.active-synced-ayah {
+  background: rgba(217, 119, 6, 0.12) !important;
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 20px rgba(217, 119, 6, 0.25) !important;
+  transform: scale(1.008);
+  transition: all 0.35s ease;
+}
+
+[data-theme='dark'] .active-synced-ayah {
+  background: rgba(245, 158, 11, 0.16) !important;
+  border-color: #fbbf24 !important;
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.3) !important;
+}

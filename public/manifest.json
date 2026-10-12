@@ -1,0 +1,68 @@
+{
+  "name": "وصل الإسلامية | Wasl Islamic",
+  "short_name": "وصل الإسلامية",
+  "description": "المنصة الإسلامية الشاملة والموثوقة: قراءة واستماع القرآن الكريم، مخطط الورد، دفتر التدبر، الأذكار، أوقات الصلاة، عالم الصغار، والبحث الإسنادي.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#022314",
+  "theme_color": "#065F46",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/branding/wasl-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "متابعة قراءة المصحف",
+      "short_name": "المصحف",
+      "description": "استئناف قراءة وردك القرآني من آخر موضع محفوظ",
+      "url": "/?tab=quran",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "مخطط الورد القرآني",
+      "short_name": "الورد اليومي",
+      "description": "جدول الختمة والورد التكيفي المتوافق مع صلواتك",
+      "url": "/?tab=planner",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "أذكار الصباح والمساء",
+      "short_name": "الأذكار",
+      "description": "حصن المسلم وأذكار الصباح والمساء المأثورة",
+      "url": "/?tab=worship",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "عالم وصل للصغار",
+      "short_name": "أكاديمية الصغار",
+      "description": "تعليم الصلاة والوضوء وقصص الأنبياء للأطفال",
+      "url": "/?tab=kids",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
